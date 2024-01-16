@@ -3,14 +3,13 @@ import './App.css';
 import React from 'react';
 import Header from '../src/components/header/header';
 import Footer from '../src/components/footer/footer';
-import Formulario from "./components/header/forms/search-form";
-import SearchFilter from "./components/search-filter/search-filter";
+import Formulario from "./components/forms/search-form";
+import FormResults from "./components/forms/form-results";
 
 function App() {
     return (
         <div>
             <Header/>
-
             <main>
                 <div className="texto">
                     <h2> Minerva : Guía de Cursos y Carreras</h2>
@@ -21,7 +20,7 @@ function App() {
                 <Formulario/>
               </div>
                 <div>
-                    <SearchFilter/>
+                    <FormResults/>
                 </div>
             </main>
 

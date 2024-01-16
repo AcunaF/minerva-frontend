@@ -1,13 +1,21 @@
 // src/components/Header.js
 import React from 'react';
+import './header.css';
+import LogoTandil from "../logo/logoTandil";
 
 function Header() {
     return (
-        <header>
-            {/* Contenido del encabezado */}
-            <h1>Mi Aplicación</h1>
-        </header>
-    );
+        <container>
+            <header>
+                <nav className=" header-content navbar navbar-expand-lg">
+                    <div className="col-lg-4 ">
+                        <LogoTandil/>
+                    </div>
+                </nav>
+            </header>
+        </container>
+
+);
 }
 
 export default Header;

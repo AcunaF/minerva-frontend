@@ -14,16 +14,12 @@ body {
 }
 
 header {
-  background-color: #333;
-  color: #fff;
-  padding: 1rem;
-  text-align: center;
+  border-bottom:1px solid darkgray ;
 }
 
 footer {
   background-color: #333;
   color: #fff;
-  padding: 1rem;
   text-align: center;
   position: fixed;
   bottom: 0;
