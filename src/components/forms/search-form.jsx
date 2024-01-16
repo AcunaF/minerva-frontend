@@ -1,13 +1,30 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import Logo from '../logo/logo.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import FormResults from './form-results'
+import FormResults from './form-results';
 
 const apiUrl = 'http://localhost:1521/api/';
 
 
 const FormularioConLogo = () => {
+    const handleReset = () => {
+
+        setFormData({
+            study: '',
+            Institution: '',
+            Area: '',
+            SubArea: '',
+            Type: '',
+            Management: '',
+            Modality: '',
+            Schedule: '',
+            Duration: '',
+        });
+        setSearchResults([]);
+
+
+    };
     const [formData, setFormData] = useState({
         study: '',
         Institution: '',
@@ -21,12 +38,17 @@ const FormularioConLogo = () => {
     });
 
     const [searchResults, setSearchResults] = useState([]);
+    const [institutions, setInstitutions] = useState([]);
+    const [areas, setAreas] = useState([]);
+    const [subAreas, setSubAreas] = useState([]);
 
     const handleChange = (e) => {
+        const {name, value} = e.target;
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value,
+            [name]: value,
         });
+
     };
 
     const handleSubmit = async (e) => {
@@ -42,7 +64,7 @@ const FormularioConLogo = () => {
                         'Content-Type': 'application/json',
                     },
                 });
-                responses.push({ type: 'study', data: await responseStudy.json() });
+                responses.push({type: 'study', data: await responseStudy.json()});
             }
 
             if (formData.Institution.trim() !== '') {
@@ -52,7 +74,7 @@ const FormularioConLogo = () => {
                         'Content-Type': 'application/json',
                     },
                 });
-                responses.push({ type: 'institution', data: await responseInstitution.json() });
+                responses.push({type: 'institution', data: await responseInstitution.json()});
             }
 
             if (formData.Area.trim() !== '') {
@@ -62,7 +84,7 @@ const FormularioConLogo = () => {
                         'Content-Type': 'application/json',
                     },
                 });
-                responses.push({ type: 'area', data: await responseArea.json() });
+                responses.push({type: 'area', data: await responseArea.json()});
             }
 
             if (formData.SubArea.trim() !== '') {
@@ -72,16 +94,54 @@ const FormularioConLogo = () => {
                         'Content-Type': 'application/json',
                     },
                 });
-                responses.push({ type: 'subArea', data: await responseSubArea.json() });
+                responses.push({type: 'subArea', data: await responseSubArea.json()});
             }
 
-            const results = responses.map(({ type, data }) => ({ type, data }));
+            const results = responses.map(({type, data}) => ({type, data}));
             setSearchResults(results);
         } catch (error) {
             console.error('Error en la solicitud al servidor:', error);
         }
     };
 
+    useEffect(() => {
+        // Cargar la lista de instituciones al montar el componente
+        const fetchInstitutions = async () => {
+            try {
+                const response = await fetch(`${apiUrl}instituciones`);
+                const data = await response.json();
+                setInstitutions(data);
+                console.log(data);
+            } catch (error) {
+                console.error('Error al cargar la lista de instituciones:', error);
+            }
+        };
+
+
+        // Cargar la lista de áreas al montar el componente
+        const fetchAreas = async () => {
+            try {
+                const response = await fetch(`${apiUrl}area`);
+                const data = await response.json();
+                setAreas(data);
+            } catch (error) {
+                console.error('Error al cargar la lista de áreas:', error);
+            }
+        };
+        const fetchSubAreas = async (selectedArea) => {
+            try {
+                const response = await fetch(`${apiUrl}subArea?area=${selectedArea}`);
+                const data = await response.json();
+                setSubAreas(data);
+            } catch (error) {
+                console.error('Error al obtener subáreas:', error);
+            }
+        };
+        fetchInstitutions();
+        fetchAreas();
+        fetchSubAreas([]);
+
+    }, []); // El array vacío asegura que se ejecute solo al montar el componente
 
     return (
         <div className="container border p-4 mt-5">
@@ -103,26 +163,59 @@ const FormularioConLogo = () => {
                         </div>
                         <div className="row">
                             <div className="col-md-4 mb-3">
-                                <label>
+                                <label htmlFor="Institution" aria-label="Seleccionar institución">
                                     Institución:
-                                    <input className="form-control"
-                                           name="Institution"
-                                           value={formData.Institution}
-                                           onChange={handleChange}/>
+                                    <select
+                                        className="form-control"
+                                        name="Institution"
+                                        value={formData.Institution}
+                                        onChange={handleChange}
+                                    >
+                                        <option value="" disabled>
+                                            Seleccione una institución
+                                        </option>
+                                        {institutions.map((institution) => (
+                                            <option key={institution.DISPLAY_VALUE} value={institution.DISPLAY_VALUE}>
+                                                {institution.DISPLAY_VALUE}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </label>
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>
                                     Área:
-                                    <input type="text" className="form-control" name="Area" value={formData.Area}
-                                           onChange={handleChange}/>
+                                    <select
+                                        className="form-control"
+                                        name="Area"
+                                        value={formData.Area}
+                                        onChange={handleChange}
+                                    >
+                                        <option value="" disabled>
+                                            Seleccione un área
+                                        </option>
+                                        {areas.map((area) => (
+                                            <option key={area.VAL} value={area.VAL}>
+                                                {area.DIS}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </label>
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>
                                     Sub-Área:
-                                    <input className="form-control" name="SubArea" value={formData.SubArea}
-                                           onChange={handleChange}/>
+                                    <select className="form-control" name="SubArea" value={formData.SubArea}
+                                            onChange={handleChange}>
+                                        <option value="" disabled>
+                                            Seleccione una subárea
+                                        </option>
+                                        {subAreas.map((subArea) => (
+                                            <option key={subArea.Id} value={subArea.Nombre}>
+                                                {subArea.Nombre}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </label>
                             </div>
                             <div className="col-md-4 mb-3">
@@ -166,20 +259,25 @@ const FormularioConLogo = () => {
                                     <button type="submit" className="btn btn-primary">Buscar</button>
                                 </div>
                                 <div className="col-md-6 mb-3">
-                                    <button type="reset" className="btn btn-secondary">Limpiar búsqueda</button>
+                                    <button type="reset" className="btn btn-secondary" onClick={handleReset}>
+                                        Limpiar búsqueda
+                                    </button>
                                 </div>
                             </div>
-
                         </div>
                     </form>
                 </div>
                 <div className="col-md-4">
                     <Logo/>
                 </div>
+
             </div>
-            <FormResults results={searchResults} />
+
+            <FormResults results={searchResults}/>
         </div>
+
     );
+
 };
 
 export default FormularioConLogo;
