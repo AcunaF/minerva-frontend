@@ -4,7 +4,6 @@ import React from 'react';
 import Header from '../src/components/header/header';
 import Footer from '../src/components/footer/footer';
 import Formulario from "./components/header/forms/search-form";
-import searchFilter from "./components/search-filter/search-filter";
 import SearchFilter from "./components/search-filter/search-filter";
 
 function App() {
