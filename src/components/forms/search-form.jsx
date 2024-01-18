@@ -51,7 +51,7 @@ const FormularioConLogo = () => {
 
         if (name === 'Area' && value.trim() !== '') {
             try {
-                const responseSubArea = await fetch(`${apiUrl}subArea?area=${encodeURIComponent(value)}`, {
+                const responseSubArea = await fetch(`${apiUrl}subArea?area=${formData(value)}`, {
                     method: 'get',
                     headers: {
                         'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ const FormularioConLogo = () => {
             const responses = [];
 
             if (formData.study.trim() !== '') {
-                const responseStudy = await fetch(`${apiUrl}/search?palabraClave=${encodeURIComponent(formData.study)}`, {
+                const responseStudy = await fetch(`${apiUrl}/search?palabraClave=${(formData.study)}`, {
                     method: 'get',
                     headers: {
                         'Content-Type': 'application/json',
