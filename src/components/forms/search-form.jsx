@@ -42,6 +42,7 @@ const FormularioConLogo = () => {
     const [subAreas, setSubAreas] = useState([]);
     const [Espacios, setEspacios] = useState([]);
     const [study, setStudy] = useState([]);
+    const [management, setManagement] = useState([]);
 
     //manejo de cambios en el formulario
     const handleChange = async (e) => {
@@ -59,6 +60,7 @@ const FormularioConLogo = () => {
                 const responseSubArea = await fetch(`${apiUrl}subArea?area=${(value)}`);
                 const dataSubArea = await responseSubArea.json();
 
+
                 // Verifica si hay una subárea seleccionada antes de hacer la llamada para obtener espacios formativos
                 if (formData.SubArea.trim() !== '') {
                     const responseEspacio = await fetch(`${apiUrl}espacio?area=${(value)}&subArea=${(formData.SubArea)}`);
@@ -71,6 +73,7 @@ const FormularioConLogo = () => {
 
                 // Actualiza las subáreas
                 setSubAreas(dataSubArea);
+                setManagement([]);
 
             } catch (error) {
                 console.error('Error al obtener subáreas o espacios formativos:', error);
@@ -83,6 +86,16 @@ const FormularioConLogo = () => {
         e.preventDefault();
         try {
             const responses = [];
+
+            if(formData.Management.trim() !== ''){
+                const responseManagement = await fetch(`${apiUrl}gestion?query=${formData.Management}`, {
+                    method: 'get',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                responses.push({type: 'management', data: await responseManagement.json()});
+            }
 
             if (formData.study.trim() !== '') {
                 const responseStudy = await fetch(`${apiUrl}/search?palabraClave=${(formData.study)}`, {
@@ -173,10 +186,21 @@ const FormularioConLogo = () => {
             }
         };
 
+        const fetchEspacios = async (selectedArea, selectedSubArea) => {
+            try {
+                const response = await fetch(`${apiUrl}espacio?area=${selectedArea}&subArea=${selectedSubArea}`);
+                const data = await response.json();
+                setEspacios(data);
+            } catch (error) {
+                console.error('Error al obtener espacios formativos:', error);
+            }
+        }
+
         fetchInstitutions();
         fetchAreas();
         fetchSubAreas([]);
         fetchtStudy();
+        fetchEspacios();
     }, [formData.study]);
 
 
@@ -257,20 +281,19 @@ const FormularioConLogo = () => {
                                 </label>
                             </div>
                             <div className="col-md-4 mb-3">
-                                <label>
-                                    Espacio Formativo:
-                                    <select className="form-control" name="Type" value={formData.Type}
-                                            onChange={handleChange}>
-                                        <option value="" disabled>
-                                            Seleccione un espacio formativo
-                                        </option>
-                                        {Array.isArray(Espacios) && Espacios.map((espacio) => (
-                                            <option key={espacio.VAL} value={espacio.VAL}>
-                                                {espacio.DIS}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </label>
+                              <label>
+                                Espacio formativo:
+                                <select className="form-control" name="Espacio" value={formData.Espacio} onChange={handleChange}>
+                                  <option value="" disabled>
+                                    Seleccione un espacio formativo
+                                  </option>
+                                  {Espacios.map((Espacio) => (
+                                    <option key={Espacio.VAL} value={Espacio.VAL}>
+                                      {Espacio.DIS}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
                             </div>
 
 
