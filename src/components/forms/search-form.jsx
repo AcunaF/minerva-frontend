@@ -1,15 +1,13 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import Logo from '../logo/logo.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
 import FormResults from './form-results';
 
 const apiUrl = 'http://localhost:1521/api/';
 
 const FormularioConLogo = () => {
-
-    //estado inicaial del formulario
-    const [formData, setFormData] = useState({
+    // Estado inicial del formulario
+    const [formData, setFormData,] = useState({
         study: '',
         Institution: '',
         Area: '',
@@ -19,8 +17,13 @@ const FormularioConLogo = () => {
         Modality: '',
         Schedule: '',
         Duration: '',
+        institutionId: '',
+        institutionInfo: {
+            id: '',
+            areas: [],
+            subAreas: [],
+        },
     });
-
     const handleReset = () => {
         setFormData({
             study: '',
@@ -32,8 +35,13 @@ const FormularioConLogo = () => {
             Modality: '',
             Schedule: '',
             Duration: '',
+            institutionId: '',
+            institutionInfo: {
+                id: '',
+                areas: [],
+                subAreas: [],
+            },
         });
-        setSearchResults([]);
     };
 
     const [searchResults, setSearchResults] = useState([]);
@@ -43,78 +51,100 @@ const FormularioConLogo = () => {
     const [Espacios, setEspacios] = useState([]);
     const [study, setStudy] = useState([]);
     const [management, setManagement] = useState([]);
+    const [selectedInstitution, setSelectedInstitution] = useState({
+        id: '',
+        areas: [],
+        subAreas: [],
+    });
 
-    //manejo de cambios en el formulario
+    // Manejo de cambios en el formulario
     const handleChange = async (e) => {
-        const {name, value} = e.target;
+        const { name, value } = e.target;
 
         setFormData({
             ...formData,
             [name]: value,
+            id: '',
+            areas: [],
             SubArea: '',
         });
 
         if (name === 'Area' && value.trim() !== '') {
             try {
-                // Obtén subáreas solo si hay un valor de área válido
-                const responseSubArea = await fetch(`${apiUrl}subArea?area=${(value)}`);
-                const dataSubArea = await responseSubArea.json();
+                if (name === 'Institution') {
+                    const selectedInstitution = institutions.find(
+                        (institution) => institution.DISPLAY_VALUE === value
+                    );
 
+                    setSelectedInstitution({
+                        id: selectedInstitution ? selectedInstitution.ID : '',
+                        areas: selectedInstitution ? selectedInstitution.AREAS : [],
+                        subAreas: selectedInstitution ? selectedInstitution.SUBAREAS : [],
+                    });
 
-                // Verifica si hay una subárea seleccionada antes de hacer la llamada para obtener espacios formativos
-                if (formData.SubArea.trim() !== '') {
-                    const responseEspacio = await fetch(`${apiUrl}espacio?area=${(value)}&subArea=${(formData.SubArea)}`);
-                    const dataEspacio = await responseEspacio.json();
-                    setEspacios(dataEspacio);
-                } else {
-                    // Si no hay subárea seleccionada, puedes establecer Espacios en un array vacío o manejarlo de acuerdo a tu lógica
-                    setEspacios([]);
+                    // Obtén subáreas solo si hay un valor de área válido
+                    const responseSubArea = await fetch(`${apiUrl}subArea?area=${value}`);
+                    const dataSubArea = await responseSubArea.json();
+
+                    // Verifica si hay una subárea seleccionada antes de hacer la llamada para obtener espacios formativos
+                    if (formData.SubArea.trim() !== '') {
+                        const responseEspacio = await fetch(
+                            `${apiUrl}espacio?area=${value}&subArea=${formData.SubArea}`
+                        );
+                        const dataEspacio = await responseEspacio.json();
+                        setEspacios(dataEspacio);
+                    } else {
+                        // Si no hay subárea seleccionada, puedes establecer Espacios en un array vacío o manejarlo de acuerdo a tu lógica
+                        setEspacios([]);
+                    }
+
+                    // Actualiza las subáreas
+                    setSubAreas(dataSubArea);
+                    setManagement([]);
                 }
-
-                // Actualiza las subáreas
-                setSubAreas(dataSubArea);
-                setManagement([]);
-
             } catch (error) {
                 console.error('Error al obtener subáreas o espacios formativos:', error);
             }
         }
     };
 
-    //manejo de envios en el formulario ealiza solicitudes al servidor basado en los valores del formulario y actualiza los resultados de la búsqueda.
+    // Manejo de envíos en el formulario
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
             const responses = [];
 
-            if(formData.Management.trim() !== ''){
+            if (formData.Management.trim() !== '') {
                 const responseManagement = await fetch(`${apiUrl}gestion?query=${formData.Management}`, {
                     method: 'get',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                 });
-                responses.push({type: 'management', data: await responseManagement.json()});
+                responses.push({ type: 'management', data: await responseManagement.json() });
             }
 
             if (formData.study.trim() !== '') {
-                const responseStudy = await fetch(`${apiUrl}/search?palabraClave=${(formData.study)}`, {
+                const responseStudy = await fetch(`${apiUrl}/search?palabraClave=${formData.study}`, {
                     method: 'get',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                 });
-                responses.push({type: 'study', data: await responseStudy.json()});
+                responses.push({ type: 'study', data: await responseStudy.json() });
             }
 
             if (formData.Institution.trim() !== '') {
-                const responseInstitution = await fetch(`${apiUrl}instituciones?query=${formData.Institution}`, {
-                    method: 'get',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
-                responses.push({type: 'institution', data: await responseInstitution.json()});
+                const responseInstitution = await fetch(
+                    `${apiUrl}instituciones?query=${formData.Institution}`,
+                    {
+                        method: 'get',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+                responses.push({ type: 'institution', data: await responseInstitution.json() });
             }
 
             if (formData.Area.trim() !== '') {
@@ -124,7 +154,7 @@ const FormularioConLogo = () => {
                         'Content-Type': 'application/json',
                     },
                 });
-                responses.push({type: 'area', data: await responseArea.json()});
+                responses.push({ type: 'area', data: await responseArea.json() });
             }
 
             if (formData.SubArea.trim() !== '') {
@@ -134,21 +164,21 @@ const FormularioConLogo = () => {
                         'Content-Type': 'application/json',
                     },
                 });
-                responses.push({type: 'subArea', data: await responseSubArea.json()});
+                responses.push({ type: 'subArea', data: await responseSubArea.json() });
             }
 
-            const results = responses.map(({type, data}) => ({type, data}));
+            const results = responses.map(({ type, data }) => ({ type, data }));
             setSearchResults(results);
         } catch (error) {
             console.error('Error en la solicitud al servidor:', error);
         }
     };
 
-   //useEffect se ejecuta después de que el componente se haya montado y cada vez que cambia el valor de formData.study.
+    // Se ejecuta después de que el componente se haya montado y cada vez que cambia el valor de formData.study.
     useEffect(() => {
         const fetchtStudy = async () => {
             try {
-                const response = await fetch(`${apiUrl}/search?palabraClave=${(formData.study)}`);
+                const response = await fetch(`${apiUrl}/search?palabraClave=${formData.study}`);
                 const data = await response.json();
                 setStudy(data);
             } catch (error) {
@@ -160,7 +190,13 @@ const FormularioConLogo = () => {
             try {
                 const response = await fetch(`${apiUrl}instituciones`);
                 const data = await response.json();
-                setInstitutions(data);
+                setInstitutions(
+                    data.map((institution) => ({
+                        ...institution,
+                        areas: institution.AREAS,
+                        subAreas: institution.SUBAREAS,
+                    }))
+                );
             } catch (error) {
                 console.error('Error al cargar la lista de instituciones:', error);
             }
@@ -188,25 +224,26 @@ const FormularioConLogo = () => {
 
         const fetchEspacios = async (selectedArea, selectedSubArea) => {
             try {
-                const response = await fetch(`${apiUrl}espacio?area=${selectedArea}&subArea=${selectedSubArea}`);
+                const response = await fetch(
+                    `${apiUrl}espacio?area=${selectedArea}&subArea=${selectedSubArea}`
+                );
                 const data = await response.json();
                 setEspacios(data);
             } catch (error) {
                 console.error('Error al obtener espacios formativos:', error);
             }
-        }
+        };
 
         fetchInstitutions();
         fetchAreas();
         fetchSubAreas([]);
         fetchtStudy();
-        fetchEspacios();
-    }, [formData.study]);
+        fetchEspacios(selectedInstitution.id, formData.SubArea);
+    }, [selectedInstitution.id, formData.SubArea, formData.study]);
 
-
-    //renderiza el formulario
+    // Renderiza el formulario
     return (
-        <div className="container border p-4 mt-5">
+        <div className="Container border p-4 mt-5">
             <div className="row">
                 <div className="col-md-8">
                     <form onSubmit={handleSubmit}>
@@ -256,9 +293,9 @@ const FormularioConLogo = () => {
                                         <option value="" disabled>
                                             Seleccione un área
                                         </option>
-                                        {areas.map((area) => (
-                                            <option key={area.VAL} value={area.VAL}>
-                                                {area.DIS}
+                                        {selectedInstitution.areas.map((area) => (
+                                            <option key={area} value={area}>
+                                                {area}
                                             </option>
                                         ))}
                                     </select>
@@ -267,35 +304,33 @@ const FormularioConLogo = () => {
                             <div className="col-md-4 mb-3">
                                 <label>
                                     Sub-Área:
-                                    <select className="form-control" name="SubArea" value={formData.SubArea}
-                                            onChange={handleChange}>
+                                    <select className="form-control" name="SubArea" value={formData.SubArea} onChange={handleChange}>
                                         <option value="" disabled>
                                             Seleccione una subárea
                                         </option>
-                                        {subAreas.map((subArea) => (
-                                            <option key={subArea.VAL} value={subArea.VAL}>
-                                                {subArea.DIS}
+                                        {selectedInstitution.subAreas.map((subArea) => (
+                                            <option key={subArea} value={subArea}>
+                                                {subArea}
                                             </option>
                                         ))}
                                     </select>
                                 </label>
                             </div>
                             <div className="col-md-4 mb-3">
-                              <label>
-                                Espacio formativo:
-                                <select className="form-control" name="Espacio" value={formData.Espacio} onChange={handleChange}>
-                                  <option value="" disabled>
-                                    Seleccione un espacio formativo
-                                  </option>
-                                  {Espacios.map((Espacio) => (
-                                    <option key={Espacio.VAL} value={Espacio.VAL}>
-                                      {Espacio.DIS}
-                                    </option>
-                                  ))}
-                                </select>
-                              </label>
+                                <label>
+                                    Espacio formativo:
+                                    <select className="form-control" name="Espacio" value={formData.Espacio} onChange={handleChange}>
+                                        <option value="" disabled>
+                                            Seleccione un espacio formativo
+                                        </option>
+                                        {Espacios.map((Espacio) => (
+                                            <option key={Espacio.VAL} value={Espacio.VAL}>
+                                                {Espacio.DIS}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
                             </div>
-
 
                             <div className="col-md-4 mb-3">
                                 <label>
@@ -312,22 +347,19 @@ const FormularioConLogo = () => {
                             <div className="col-md-4 mb-3">
                                 <label>
                                     Modalidad:
-                                    <input className="form-control" name="Modality" value={formData.Modality}
-                                           onChange={handleChange}/>
+                                    <input className="form-control" name="Modality" value={formData.Modality} onChange={handleChange} />
                                 </label>
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>
                                     Franja horaria
-                                    <input className="form-control" name="Schedule" value={formData.Schedule}
-                                           onChange={handleChange}/>
+                                    <input className="form-control" name="Schedule" value={formData.Schedule} onChange={handleChange} />
                                 </label>
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label>
                                     Duración:
-                                    <input className="form-control" name="Duration" value={formData.Duration}
-                                           onChange={handleChange}/>
+                                    <input className="form-control" name="Duration" value={formData.Duration} onChange={handleChange} />
                                 </label>
                             </div>
                             <div className="row mt-4">
@@ -346,10 +378,10 @@ const FormularioConLogo = () => {
                     </form>
                 </div>
                 <div className="col-md-4">
-                    <Logo/>
+                    <Logo />
                 </div>
             </div>
-            <FormResults results={searchResults}/>
+            <FormResults results={searchResults} />
         </div>
     );
 };

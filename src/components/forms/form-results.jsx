@@ -1,42 +1,60 @@
-import React from 'react';
+const ResultadosBusqueda = ({ results, selectedInstitution }) => {
+    const columnasAMostrar = [
+        'NOMBRE',
+        'ESPACIO_FORMATIVO',
+        'INSTITUCION',
+        'GESTION',
+        'MODALIDAD',
+        'AREA_1',
+        'SUBAREA_1',
+        'DURACION',
+    ];
 
-const FormResults = ({ results }) => {
-    if (!results || results.length === 0) {
-        return <div>No hay resultados para mostrar.</div>;
-    }
+    console.log('Results:', results);
 
     return (
         <div>
             <h2>Resultados de la búsqueda</h2>
-            {results.map(({ type, data }, index) => (
-                <div key={index}>
-                    <h3>{type}</h3>
-                    {data && data.resultados && data.resultados.length > 0 ? (
-                        <table className="table">
-                            <thead>
-                            <tr>
-                                {data.resultados[0] && Object.keys(data.resultados[0]).map((column, columnIndex) => (
-                                    <th key={columnIndex}>{column}</th>
-                                ))}
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {data.resultados.map((result, resultIndex) => (
-                                <tr key={resultIndex}>
-                                    {Object.keys(result).map((column, columnIndex) => (
-                                        <td key={columnIndex}>{result[column]}</td>
+            {results &&
+                results.map(({ type, data }, index) => (
+                    <div key={index}>
+                        <h3>{type}</h3>
+                        {data && data.resultados && data.resultados.length > 0 ? (
+                            <table className="table">
+                                <thead>
+                                <tr>
+                                    {/* columnas seleccionadas */}
+                                    {columnasAMostrar.map((columna, columnIndex) => (
+                                        <th key={columnIndex}>{columna}</th>
                                     ))}
+                                    {/* Renderizar el campo de institución solo si hay una institución seleccionada */}
+                                    {selectedInstitution && (
+                                        <th key="institucion">Institución Seleccionada</th>
+                                    )}
                                 </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <p>No hay resultados para mostrar.</p>
-                    )}
-                </div>
-            ))}
+                                </thead>
+                                <tbody>
+                                {data.resultados.map((result, resultIndex) => (
+                                    <tr key={resultIndex}>
+                                        {/* valores seleccionadas */}
+                                        {columnasAMostrar.map((columna, columnIndex) => (
+                                            <td key={columnIndex}>{result[columna]}</td>
+                                        ))}
+                                        {/* Renderizar el nombre de la institución solo si hay una institución seleccionada */}
+                                        {selectedInstitution && (
+                                            <td key="institucion">{selectedInstitution.DISPLAY_VALUE}</td>
+                                        )}
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <p>No hay resultados para mostrar.</p>
+                        )}
+                    </div>
+                ))}
         </div>
     );
 };
 
-export default FormResults;
+export default ResultadosBusqueda;
