@@ -8,6 +8,7 @@ const ResultadosBusqueda = ({ results, selectedInstitution }) => {
         'AREA_1',
         'SUBAREA_1',
         'DURACION',
+
     ];
 
     console.log('Results:', results);
@@ -23,15 +24,14 @@ const ResultadosBusqueda = ({ results, selectedInstitution }) => {
                             <table className="table">
                                 <thead>
                                 <tr>
-                                    {/* columnas seleccionadas */}
+                                    {/* nombres de las columnas */}
                                     {columnasAMostrar.map((columna, columnIndex) => (
                                         <th key={columnIndex}>{columna}</th>
                                     ))}
-                                    {/* Renderizar el campo de institución solo si hay una institución seleccionada */}
-                                    {selectedInstitution && (
-                                        <th key="institucion">Institución Seleccionada</th>
-                                    )}
+                                    {/* nombre de la institución */}
+                                    {selectedInstitution && <th>Institución</th>}
                                 </tr>
+
                                 </thead>
                                 <tbody>
                                 {data.resultados.map((result, resultIndex) => (
