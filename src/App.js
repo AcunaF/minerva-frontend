@@ -1,9 +1,8 @@
-import logo from './logo.svg';
 import './App.css';
 import React from 'react';
 import Header from '../src/components/header/header';
 import Footer from '../src/components/footer/footer';
-import Formulario from "./components/forms/search-form";
+import SearchForm from "./components/forms/search-form";
 import FormResults from "./components/forms/form-results";
 
 function App() {
@@ -17,7 +16,7 @@ function App() {
                         dictados en Instituciones públicas y privadas de nuestra ciudad y la zona.</h4>
                 </div>
               <div>
-                <Formulario/>
+                <SearchForm/>
               </div>
                 <div>
                     <FormResults/>
