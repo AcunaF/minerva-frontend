@@ -1,3 +1,5 @@
+import React from 'react';
+
 const ResultadosBusqueda = ({ results, selectedInstitution }) => {
     const columnasAMostrar = [
         'NOMBRE',
@@ -8,7 +10,6 @@ const ResultadosBusqueda = ({ results, selectedInstitution }) => {
         'AREA_1',
         'SUBAREA_1',
         'DURACION',
-
     ];
 
     console.log('Results:', results);
@@ -16,43 +17,49 @@ const ResultadosBusqueda = ({ results, selectedInstitution }) => {
     return (
         <div>
             <h2>Resultados de la búsqueda</h2>
-            {results &&
+            {Array.isArray(results) && results.length > 0 ? (
                 results.map(({ type, data }, index) => (
                     <div key={index}>
-                        <h3>{type}</h3>
-                        {data && data.resultados && data.resultados.length > 0 ? (
+                        <h3>{`Resultados de ${type}`}</h3>
+                        {data ? (
                             <table className="table">
                                 <thead>
                                 <tr>
-                                    {/* nombres de las columnas */}
                                     {columnasAMostrar.map((columna, columnIndex) => (
-                                        <th key={columnIndex}>{columna}</th>
+                                        <th key={columna}>{columna}</th>
                                     ))}
-                                    {/* nombre de la institución */}
                                     {selectedInstitution && <th>Institución</th>}
                                 </tr>
-
                                 </thead>
                                 <tbody>
-                                {data.resultados.map((result, resultIndex) => (
-                                    <tr key={resultIndex}>
-                                        {/* valores seleccionadas */}
-                                        {columnasAMostrar.map((columna, columnIndex) => (
-                                            <td key={columnIndex}>{result[columna]}</td>
-                                        ))}
-                                        {/* Renderizar el nombre de la institución solo si hay una institución seleccionada */}
-                                        {selectedInstitution && (
-                                            <td key="institucion">{selectedInstitution.DISPLAY_VALUE}</td>
-                                        )}
+                                {Array.isArray(data) && data.length > 0 ? (
+                                    data.map((result, resultIndex) => (
+                                        <tr key={resultIndex}>
+                                            {columnasAMostrar.map((columna) => (
+                                                <td key={`${resultIndex}-${columna}`}>{result[columna]}</td>
+                                            ))}
+                                            {selectedInstitution && (
+                                                <td key={`${resultIndex}-institucion`}>{selectedInstitution.DISPLAY_VALUE}</td>
+                                            )}
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={columnasAMostrar.length + (selectedInstitution ? 1 : 0)}>
+                                            No hay resultados para mostrar.
+                                        </td>
                                     </tr>
-                                ))}
+                                )}
                                 </tbody>
                             </table>
                         ) : (
-                            <p>No hay resultados para mostrar.</p>
+                            <p>{`No hay resultados de ${type} para mostrar.`}</p>
                         )}
                     </div>
-                ))}
+                ))
+            ) : (
+                <p>No hay resultados para mostrar.</p>
+            )}
         </div>
     );
 };

@@ -7,26 +7,7 @@ const apiUrl = 'http://localhost:1521/api/';
 
 const FormularioConLogo = () => {
 
-    const [formData, setFormData] = useState({
-        study: '',
-        Institution: '',
-        Area: '',
-        SubArea: '',
-        EspacioFormativo: '',
-        gestion: '',
-        modalidad: '',
-        duracion: '',
-        franjaHoraria: '',
-        search: '',
-
-
-    });
-    const [selectedInstitution, setSelectedInstitution] = useState({
-        id: '',
-        subAreas: [],
-    });
-    const handleReset = () => {
-        setFormData({
+        const [formData, setFormData] = useState({
             study: '',
             Institution: '',
             Area: '',
@@ -37,172 +18,241 @@ const FormularioConLogo = () => {
             duracion: '',
             franjaHoraria: '',
             search: '',
+
+
         });
-    };
-    const [searchResults, setSearchResults] = useState([]);
-    const [study, setStudy] = useState([]);
-    const [institutions, setInstitutions] = useState([]);
-    const [areas, setAreas] = useState([]);
-    const [subAreas, setSubAreas] = useState([]);
-    const [espacioFormativo, setEspacioFormativo] = useState('');
-    const [gestion, setGestion] = useState('');
-    const [duracionData, setDuracion] = useState('');
-    const [franjaHorariaOptions, setFranjaHorariaOptions] = useState([]);
-    const [duracionOptions, setDuracionOptions] = useState([]);
-    const [modalidadOptions, setModalidadOptions] = useState([]);
-    const [showResults, setShowResults] = useState(false);
-
-
-    const handleChange = async (e) => {
-        const {name, value} = e.target;
-
-        setFormData((prevState) => ({
-            ...prevState,
-            [name]: value,
-        }));
-        setSelectedInstitution({
+        const [selectedInstitution, setSelectedInstitution] = useState({
             id: '',
+            areas: [],
             subAreas: [],
-        })
-        if (name === 'Area') {
-            const selectedArea = areas.find((area) => area.AREA === value);
+        });
+        const handleReset = () => {
+            setFormData({
+                study: '',
+                Institution: '',
+                Area: '',
+                SubArea: '',
+                EspacioFormativo: '',
+                gestion: '',
+                modalidad: '',
+                duracion: '',
+                franjaHoraria: '',
+                search: '',
+            });
 
-            console.log('Selected Area:', selectedArea);
+        };
+        const [searchResults, setSearchResults] = useState([]);
+        const [study, setStudy] = useState([]);
+        const [filtro, setFiltro   ] = useState([]);
+        const [institutions, setInstitutions] = useState([]);
+        const [areas, setAreas] = useState([]);
+        const [subAreas, setSubAreas] = useState([]);
+        const [espacioFormativo, setEspacioFormativo] = useState('');
+        const [gestion, setGestion] = useState('');
+        const [franjaHorariaOptions, setFranjaHorariaOptions] = useState([]);
+        const [duracionOptions, setDuracionOptions] = useState([]);
+        const [modalidadOptions, setModalidadOptions] = useState([]);
+        const [showResults, setShowResults] = useState(false);
 
-            if (selectedArea) {
-                // Actualizar las subáreas en el estado
-                setSubAreas(selectedArea?.SUBAREAS || []);
-            } else {
-                // Si no hay área seleccionada, puedes reiniciar las subáreas
-                setSubAreas([]);
+
+        const handleChange = async (e) => {
+            const {name, value} = e.target;
+
+            setFormData((prevState) => ({
+                ...prevState,
+                [name]: value,
+            }));
+            setSelectedInstitution({
+                id: '',
+                subAreas: [],
+            })
+            if (name === 'Area') {
+                const selectedArea = areas.find((area) => area.AREA === value);
+
+                console.log('Selected Area:', selectedArea);
+
+                if (selectedArea) {
+                    // Actualizar las subáreas en el estado
+                    setSubAreas(selectedArea?.SUBAREAS || []);
+                } else {
+                    // Si no hay área seleccionada, puedes reiniciar las subáreas
+                    setSubAreas([]);
+                }
+
+            } else if (name === 'SubArea') {
+                // Obtener espacio formativo
+                try {
+                    const responseEspacio = await fetch(
+                        `${apiUrl}espacio?area=${(formData.Area)}&subArea=${(value)}`,
+                        {
+                            method: 'get',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        }
+                    );
+                    const espacioData = await responseEspacio.json();
+                    // Actualizar estado del espacio formativo
+                    setEspacioFormativo(espacioData[0]?.ESPACIO_FORMATIVO || '');
+                    console.log('Espacio Formativo esteee:', espacioData[0]?.ESPACIO_FORMATIVO || '');
+
+                    // Obtener y actualizar gestión
+                    const responseGestion = await fetch(
+                        `${apiUrl}gestion?area=${(formData.Area)}&subArea=${(value)}`,
+                        {
+                            method: 'get',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        }
+                    );
+                    const gestionData = await responseGestion.json();
+                    setGestion(gestionData[0]?.GESTION || '');
+                    console.log('Gestión:', gestionData[0]?.GESTION || '');
+
+                    try {
+                        const responseModalidad = await fetch(
+                            `${apiUrl}modalidad?area=${formData.Area}&subArea=${value}`,
+                            {
+                                method: 'get',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                            }
+                        );
+                        const modalidadData = await responseModalidad.json();
+
+                        // Actualiza el estado utilizando setModalidadOptions
+                        setModalidadOptions(modalidadData.map((item) => item.MODALIDAD));
+                        console.log('Modalidad:', modalidadData.map((item) => item.MODALIDAD));
+                    } catch (error) {
+                        console.error('Error al obtener opciones de Modalidad:', error);
+                    }
+
+
+                    // Obtener y actualizar franja horaria
+                    const responseFranjaHoraria = await fetch(
+                        `${apiUrl}horarios?keyword=${(formData.Area)}`,
+                        {
+                            method: 'get',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        }
+                    );
+
+                    const franjaHorariaOptionsData = await responseFranjaHoraria.json();
+                    setFranjaHorariaOptions(franjaHorariaOptionsData.map((item) => item.FRANJA_HORARIA || ''));
+                    console.log('Franja Horaria:', franjaHorariaOptionsData.map((item) => item.FRANJA_HORARIA || ''));
+
+                    // Obtener y actualizar duración
+                    const responseDuracion = await fetch(
+                        `${apiUrl}duracion?area=${(formData.Area)}&subArea=${(value)}`,
+                        {
+                            method: 'get',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        }
+                    );
+                    const duracionData = await responseDuracion.json();
+                    setDuracionOptions(duracionData[0]?.DURACION || '');
+                    console.log('Duración:', duracionData[0]?.DURACION || '');
+
+
+                } catch (error) {
+                    console.error('Error al obtener información adicional:', error);
+                }
             }
+        };
 
-        } else if (name === 'SubArea') {
-            // Obtener espacio formativo
+        const handleSubmit = async (e) => {
+            e.preventDefault();
             try {
-                const responseEspacio = await fetch(
-                    `${apiUrl}espacio?area=${(formData.Area)}&subArea=${(value)}`,
-                    {
-                        method: 'get',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
-                const espacioData = await responseEspacio.json();
-                // Actualizar estado del espacio formativo
-                setEspacioFormativo(espacioData[0]?.ESPACIO_FORMATIVO || '');
-                console.log('Espacio Formativo esteee:', espacioData[0]?.ESPACIO_FORMATIVO || '');
+                const responses = [];
 
-                // Obtener y actualizar gestión
-                const responseGestion = await fetch(
-                    `${apiUrl}gestion?area=${(formData.Area)}&subArea=${(value)}`,
-                    {
-                        method: 'get',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
-                const gestionData = await responseGestion.json();
-                setGestion(gestionData[0]?.GESTION || '');
-                console.log('Gestión:', gestionData[0]?.GESTION || '');
-
-                const responseModalidad = await fetch(
-                    `${apiUrl}modalidad?area=${(formData.Area)}&subArea=${(value)}`,
-                    {
-                        method: 'get',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
-                const modalidadData = await responseModalidad.json();
-
-                // Actualiza el estado utilizando setModalidadOptions
-                setModalidadOptions(modalidadData.map((item) => item.MODALIDAD));
-                console.log('Modalidad:', modalidadData.map((item) => item.MODALIDAD));
-
-                // Obtener y actualizar franja horaria
-
-                const responseFranjaHoraria = await fetch(
-                    `${apiUrl}horarios?keyword=${(formData.Area)}`,
-                    {
-                        method: 'get',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
-
-                const franjaHorariaOptionsData = await responseFranjaHoraria.json();
-                setFranjaHorariaOptions(franjaHorariaOptionsData.map((item) => item.FRANJA_HORARIA || ''));
-                console.log('Franja Horaria:', franjaHorariaOptionsData.map((item) => item.FRANJA_HORARIA || ''));
-
-                // Obtener y actualizar duración
-                const responseDuracion = await fetch(
-                    `${apiUrl}duracion?area=${(formData.Area)}&subArea=${(value)}`,
-                    {
-                        method: 'get',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
-                const duracionData = await responseDuracion.json();
-                setDuracionOptions(duracionData[0]?.DURACION || '');
-                console.log('Duración:', duracionData[0]?.DURACION || '');
-
-
-            } catch (error) {
-                console.error('Error al obtener información adicional:', error);
+                // Búsqueda por estudios
+                if (formData.study.trim() !== '') {
+                    const responseStudy = await performSearch('search', `palabraClave=${formData.study}`);
+                    responses.push({type: 'study', data: responseStudy});
+                }
+                // Búsqueda por filtros
+                if (
+                    formData.Institution !== undefined &&
+                    formData.Area !== undefined &&
+                    formData.SubArea !== undefined &&
+                    formData.modalidad !== undefined &&
+                    formData.EspacioFormativo !== undefined &&
+                    formData.franjaHoraria !== undefined &&
+                    formData.gestion !== undefined &&
+                    formData.duracion !== undefined &&
+                    formData.Institution.trim() !== '' &&
+                    formData.Area.trim() !== '' &&
+                    formData.SubArea.trim() !== '' &&
+                    formData.modalidad.trim() !== '' &&
+                    formData.EspacioFormativo.trim() !== '' &&
+                    formData.franjaHoraria.trim() !== '' &&
+                    formData.gestion.trim() !== '' &&
+                    formData.duracion.trim() !== ''
+                ) {
+                    const filterParams = `area=${formData.Area}&subArea=${formData.SubArea}&modalidad=${formData.modalidad}&espacioFormativo=${formData.EspacioFormativo}&franjaHoraria=${formData.franjaHoraria}&gestion=${formData.gestion}&duracion=${formData.duracion}`;
+                    const responseFilter = await performSearch('filtro', filterParams);
+                    responses.push({type: 'search', data: responseFilter});
+                }
+                const results = responses.map(({type, data}) => ({type, data}));
+                setSearchResults(results);
+                console.log('a ver que trae este Results:', results);
+            }   catch (error) {
+                console.error('Error en la solicitud al servidor:', error);
             }
-        }
-    };
+        };
 
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            const responses = [];
-
-            if (formData.study.trim() !== '') {
-                const responseStudy = await fetch(
-                    `${apiUrl}/search?palabraClave=${formData.study}`,
-                    {
-                        method: 'get',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
-                responses.push({ type: 'study', data: await responseStudy.json() });
+        // Función auxiliar para realizar una búsqueda genérica
+             const performSearch = async (type, queryParams) => {
+            const response = await fetch(`${apiUrl}/search?${queryParams}`, {
+                method: 'get',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (response.ok) {
+                return await response.json();
+            } else {
+                console.error(`Error en la solicitud (${type}): ${response.status}`);
+                return null; // Puedes manejar el error de otras maneras según tus necesidades
             }
+        };
 
-            if (formData.Area && formData.SubArea && formData.modalidad) {
-                const responseSearch = await fetch(
-                    `${apiUrl}/search?area=${formData.Area}&subArea=${formData.SubArea}&modalidad=${formData.modalidad}`,
-                    {
-                        method: 'get',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
-                responses.push({ type: 'search', data: await responseSearch.json() });
-            }
+        useEffect(() => {
 
-            const results = responses.map(({ type, data }) => ({ type, data }));
-            setSearchResults(results);
-        } catch (error) {
-            console.error('Error en la solicitud al servidor:', error);
-        }
-    };
+            const fetchStudy = async () => {
+                try {
+                    const response = await fetch(
+                        `${apiUrl}/search?palabraClave=${formData.study}`
+                    );
+                    const data = await response.json();
+                    setStudy(data);
+                } catch (error) {
+                    console.error('Error al cargar la lista estudios:', error);
+                }
+            };
+          //   Búsqueda por filtros
+            const fecthFilter = async () => {
+                try {
+                    const response = await fetch(
+                        `${apiUrl}/filtro?area=${formData.Area}&subArea=${formData.SubArea}&modalidad=${formData.modalidad}&espacioFormativo=${formData.EspacioFormativo}&franjaHoraria=${formData.franjaHoraria}&gestion=${formData.gestion}&duracion=${formData.duracion}`
+                    );
+                   // http://localhost:1521/api/filtro?area=${formData.Area}&subArea=${formData.SubArea}&modalidad=${formData.modalidad}&espacioFormativo=${formData.EspacioFormativo}&franjaHoraria=${formData.franjaHoraria}&gestion=${formData.gestion}&duracion=${formData.duracion}`
+                   //
+                    const data = await response.json();
+                   // setFiltro(data);
+                    console.log('a ver que trae este filtro:', data);
 
 
-
-    useEffect(() => {
-
+                } catch (error) {
+                    console.error('Error al cargar la lista estudios:', error);
+                }
+            };
 
             const fetchInstitutions = async () => {
                 try {
@@ -236,19 +286,16 @@ const FormularioConLogo = () => {
                     console.error('Error al cargar la lista de subáreas:', error);
                 }
             };
-            ;
-
-            const fetchStudy = async () => {
+            const fetchEspacioFormativo = async () => {
                 try {
-                    const response = await fetch(
-                        `${apiUrl}/search?palabraClave=${formData.study}`
-                    );
+                    const response = await fetch(`${apiUrl}espacio?area=${formData.Area}&subArea=${formData.SubArea}`);
                     const data = await response.json();
-                    setStudy(data);
+                    setEspacioFormativo(data[0]?.ESPACIO_FORMATIVO || '');
                 } catch (error) {
-                    console.error('Error al cargar la lista estudios:', error);
+                    console.error('Error al obtener espacio formativo:', error);
                 }
             };
+
             const fetchFranjaHorariaOptions = async () => {
                 try {
                     const response = await fetch(`${apiUrl}horarios?keyword=${(formData.Area)}`, {
@@ -277,7 +324,6 @@ const FormularioConLogo = () => {
                     console.error('Error al obtener opciones de modalidad:', error);
                 }
             };
-
             const fetchDuracionOptions = async () => {
                 try {
                     const response = await fetch(`${apiUrl}duracion?area=${formData.Area}&subArea=${formData.SubArea}`);
@@ -300,16 +346,17 @@ const FormularioConLogo = () => {
                     console.error('Error al obtener opciones de duración:', error);
                 }
             };
-
-            fetchModalidadOptions();
-            fetchFranjaHorariaOptions();
+            fetchStudy();
+        //  fecthFilter();
             fetchInstitutions();
             fetchAreas();
-            fetchStudy();
-            fetchDuracionOptions();
             if (formData.Area) {
                 fetchSubAreas(formData.Area);
             }
+            fetchEspacioFormativo();
+            fetchModalidadOptions();
+            fetchFranjaHorariaOptions();
+            fetchDuracionOptions();
         }, [apiUrl, formData.study, formData.Area]);
 
         console.log('Modalidad Options:', modalidadOptions);
@@ -513,7 +560,7 @@ const FormularioConLogo = () => {
                         <Logo/>
                     </div>
                 </div>
-                <FormResults results={searchResults} show={showResults} />
+                <FormResults results={searchResults} show={showResults}/>
             </div>
         );
     }
