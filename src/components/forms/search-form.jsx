@@ -55,9 +55,8 @@ const FormularioConLogo = () => {
     };
 
 
-    const [searchResults, setSearchResults] = useState([]);
-
-    const [study, setStudy] = useState([]);
+        const [searchResults, setSearchResults] = useState([]);
+        const [study, setStudy] = useState([]);
         const [filtro, setFiltro   ] = useState([]);
         const [institutions, setInstitutions] = useState([]);
         const [areas, setAreas] = useState([]);
@@ -664,11 +663,13 @@ const FormularioConLogo = () => {
                 </div>
                 <div className="row">
                     <div className="col-md-12">
-                        <FormResults results={searchResults} show={showResults}/>
+                        <FormResults results={searchResults}
+                                     show={showResults}
+                                     handleDetailsClick={(result) => {
+                                         console.log('Detalles de:', result);
+                                     }}/>
                     </div>
-
-
-                   </div>
+                </div>
             </div>
         );
     }

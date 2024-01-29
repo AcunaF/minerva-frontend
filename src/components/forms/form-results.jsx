@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
+import DetallesComponent from '../details/DetallesComponent';  // Ajusta la ruta según tu estructura de carpetas
 
 const FormResults = ({ results, show }) => {
     const columnasAMostrar = [
-        'DETALLE',
         'NOMBRE',
         'ESPACIO_FORMATIVO',
         'NIVEL',
@@ -10,11 +10,13 @@ const FormResults = ({ results, show }) => {
         'DATOS',
         'DOMICILIO',
         'AREA_1',
-
-
     ];
 
-    console.log('Results:', results);
+    const [selectedDetails, setSelectedDetails] = useState(null);
+
+    const handleDetallesClick = (result) => {
+        setSelectedDetails(result);
+    };
 
     return (
         <div>
@@ -29,6 +31,7 @@ const FormResults = ({ results, show }) => {
                                 {columnasAMostrar.map((columna) => (
                                     <th key={columna}>{columna}</th>
                                 ))}
+                                <th>DETALLES</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -40,11 +43,20 @@ const FormResults = ({ results, show }) => {
                                                 {result[columna]}
                                             </td>
                                         ))}
+                                        <td>
+                                            <button
+                                                type="button"
+                                                className="btn btn-primary"
+                                                onClick={() => handleDetallesClick(result)}
+                                            >
+                                                Detalles
+                                            </button>
+                                        </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={columnasAMostrar.length}>
+                                    <td colSpan={columnasAMostrar.length + 1}>
                                         No hay resultados para mostrar.
                                     </td>
                                 </tr>
@@ -56,6 +68,11 @@ const FormResults = ({ results, show }) => {
                     )}
                 </div>
             ))}
+
+            {/* Mostrar DetallesComponent si se ha seleccionado un detalle */}
+            {selectedDetails && (
+                <DetallesComponent detallesData={selectedDetails} onClose={() => setSelectedDetails(null)} />
+            )}
         </div>
     );
 };

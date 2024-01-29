@@ -1,0 +1,13 @@
+/* En tu archivo de estilos CSS */
+.btn-detalles {
+    /* Personaliza el estilo del botón Detalles aquí */
+    background-color: #28a745; /* Cambia el color de fondo a verde */
+    border-color: #28a745; /* Cambia el color del borde a verde */
+    /* Agrega más estilos según tus preferencias */
+}
+
+/* Si deseas cambiar el color al pasar el ratón por encima del botón */
+.btn-detalles:hover {
+    background-color: #218838; /* Cambia el color de fondo a un tono más oscuro de verde al pasar el ratón */
+    border-color: #1e7e34; /* Cambia el color del borde al pasar el ratón */
+}
