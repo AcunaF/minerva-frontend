@@ -2,14 +2,16 @@ import React from 'react';
 
 const FormResults = ({ results, show }) => {
     const columnasAMostrar = [
+        'DETALLE',
         'NOMBRE',
         'ESPACIO_FORMATIVO',
+        'NIVEL',
         'INSTITUCION',
-        'GESTION',
-        'MODALIDAD',
+        'DATOS',
+        'DOMICILIO',
         'AREA_1',
-        'SUBAREA_1',
-        'DURACION',
+
+
     ];
 
     console.log('Results:', results);
@@ -18,13 +20,13 @@ const FormResults = ({ results, show }) => {
         <div>
             <h2>Resultados de la búsqueda</h2>
             {show && results.map(({ type, data }, index) => (
-                <div key={index}>
+                <div key={type}>
                     <h3>{`Resultados de ${type}`}</h3>
                     {data ? (
                         <table className="table">
                             <thead>
                             <tr>
-                                {columnasAMostrar.map((columna, columnIndex) => (
+                                {columnasAMostrar.map((columna) => (
                                     <th key={columna}>{columna}</th>
                                 ))}
                             </tr>
@@ -32,9 +34,11 @@ const FormResults = ({ results, show }) => {
                             <tbody>
                             {Array.isArray(data) && data.length > 0 ? (
                                 data.map((result, resultIndex) => (
-                                    <tr key={resultIndex}>
+                                    <tr key={`${type}-${resultIndex}`}>
                                         {columnasAMostrar.map((columna) => (
-                                            <td key={`${resultIndex}-${columna}`}>{result[columna]}</td>
+                                            <td key={`${type}-${resultIndex}-${columna}`}>
+                                                {result[columna]}
+                                            </td>
                                         ))}
                                     </tr>
                                 ))
