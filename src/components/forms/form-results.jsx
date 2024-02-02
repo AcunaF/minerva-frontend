@@ -1,77 +1,128 @@
-import React, { useState } from 'react';
-import DetallesComponent from '../details/DetallesComponent';  // Ajusta la ruta según tu estructura de carpetas
+import React, { useState, useEffect } from 'react';
+import DetallesComponent from '../details/DetallesComponent';
 
-const FormResults = ({ results, show }) => {
+const apiUrl = 'http://localhost:1521/api/';
+
+const FormResults = ({ results, show, formData, searchType }) => {
     const columnasAMostrar = [
-        'NOMBRE',
-        'ESPACIO_FORMATIVO',
-        'NIVEL',
         'INSTITUCION',
-        'DATOS',
-        'DOMICILIO',
         'AREA_1',
+        'SUBAREA_1',
+        'GESTION',
+        'MODALIDAD',
+        'ESPACIO_FORMATIVO',
     ];
 
-    const [selectedDetails, setSelectedDetails] = useState(null);
+    const [detallesData, setDetallesData] = useState(null);
+    const [mostrarDetalles, setMostrarDetalles] = useState(false);
+
+    const fetchDetails = async (result) => {
+        try {
+            const { nombre, espacioFormativo, nivel, institucion, domicilio, area } = result;
+
+            const queryParams = new URLSearchParams({
+                nombre: nombre || '',
+                espacioFormativo: espacioFormativo || '',
+                nivel: nivel || '',
+                institucion: institucion || '',
+                domicilio: domicilio || '',
+                area: area || '',
+            }).toString();
+
+            const response = await fetch(`${apiUrl}details?${queryParams}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Puedes incluir otros encabezados según sea necesario
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error de red: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setDetallesData(data);
+        } catch (error) {
+            console.error('Error fetching details:', error);
+        }
+    };
 
     const handleDetallesClick = (result) => {
-        setSelectedDetails(result);
+        // Si ya se está mostrando el detalle, cierra los detalles
+        if (detallesData) {
+            setDetallesData(null);
+            setMostrarDetalles(false);
+        } else {
+            // Si no se está mostrando el detalle, abre los detalles
+            const criteria = {
+                nombre: result.nombre || '',
+                espacioFormativo: result.espacioFormativo || '',
+                nivel: result.nivel || '',
+                institucion: result.institucion || '',
+                domicilio: result.domicilio || '',
+                area: result.area || '',
+            };
+            fetchDetails(criteria);
+            setMostrarDetalles(true);
+        }
+    };
+
+    const handleCloseDetalles = () => {
+        setDetallesData(null);
+        setMostrarDetalles(false);
     };
 
     return (
         <div>
             <h2>Resultados de la búsqueda</h2>
-            {show && results.map(({ type, data }, index) => (
-                <div key={type}>
-                    <h3>{`Resultados de ${type}`}</h3>
-                    {data ? (
-                        <table className="table">
-                            <thead>
-                            <tr>
-                                {columnasAMostrar.map((columna) => (
-                                    <th key={columna}>{columna}</th>
-                                ))}
-                                <th>DETALLES</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {Array.isArray(data) && data.length > 0 ? (
-                                data.map((result, resultIndex) => (
-                                    <tr key={`${type}-${resultIndex}`}>
-                                        {columnasAMostrar.map((columna) => (
-                                            <td key={`${type}-${resultIndex}-${columna}`}>
-                                                {result[columna]}
+            {show &&
+                results.map(({ type, data }, index) => (
+                    <div key={type}>
+                        {data ? (
+                            <table className="table">
+                                <tbody>
+                                {Array.isArray(data) && data.length > 0 ? (
+                                    data.map((result, resultIndex) => (
+                                        <tr key={`${type}-${resultIndex}`}>
+                                            {columnasAMostrar.map((columna) => (
+                                                <td key={`${type}-${resultIndex}-${columna}`}>
+                                                    {columna === 'SUBAREA' && result.SUBAREA}
+                                                    {columna === 'AREA' && result.AREA}
+                                                    {columna !== 'SUBAREA' && columna !== 'AREA' && result[columna]}
+                                                </td>
+                                            ))}
+                                            <td>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-link"
+                                                    onClick={() => handleDetallesClick(result)}
+                                                >
+                                                    Mas
+                                                </button>
                                             </td>
-                                        ))}
-                                        <td>
-                                            <button
-                                                type="button"
-                                                className="btn btn-primary"
-                                                onClick={() => handleDetallesClick(result)}
-                                            >
-                                                Detalles
-                                            </button>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={columnasAMostrar.length + 1}>
+                                            No hay resultados para mostrar.
                                         </td>
                                     </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={columnasAMostrar.length + 1}>
-                                        No hay resultados para mostrar.
-                                    </td>
-                                </tr>
-                            )}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <p>{`No hay resultados de ${type} para mostrar.`}</p>
-                    )}
-                </div>
-            ))}
+                                )}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <div className="alert alert-danger" role="alert">
+                                No se pudo obtener la información de los resultados.
+                            </div>
+                        )}
+                    </div>
+                ))}
 
-            {/* Mostrar DetallesComponent si se ha seleccionado un detalle */}
-            {selectedDetails && (
-                <DetallesComponent detallesData={selectedDetails} onClose={() => setSelectedDetails(null)} />
+            {/* Mostrar DetallesComponent si hay detallesData */}
+            {detallesData && (
+                <DetallesComponent detallesData={detallesData} onClose={handleCloseDetalles} />
             )}
         </div>
     );

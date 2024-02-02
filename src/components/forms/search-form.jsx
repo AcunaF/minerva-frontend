@@ -2,34 +2,52 @@ import React, {useState, useEffect} from 'react';
 import Logo from '../logo/logo.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import FormResults from './form-results';
+import SearchFilter from "../search-filter/search-filter";
+
 
 const apiUrl = 'http://localhost:1521/api/';
-
 const FormularioConLogo = () => {
 
-        const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState({
+        institution: '',
+        Area: '',
+        subArea: '',
+        espacioFormativo: '',
+        gestion: '',
+        modalidad: '',
+        duracion: '',
+        franjaHoraria: '',
+        search: '',
+        name: '',
+        nivel: '',
+        domicilio: '',
 
-            institution: '',
-            Area: '',
-            subArea: '',
-            espacioFormativo: '',
-            gestion: '',
-            modalidad: '',
-            duracion: '',
-            franjaHoraria: '',
-            search: '',
-        });
+    });
+
+    const handleBuscar = (filtro) => {
+        // Lógica de búsqueda en la base de datos con el filtro proporcionado
+        // Actualiza el estado o realiza acciones según sea necesario
+        console.log('Realizar búsqueda con filtro:', filtro);
+    };
 
 
     const [selectedInstitution, setSelectedInstitution] = useState({
-            id: '',
-            areas: [],
-            subAreas: [],
+        id: '',
+        areas: [],
+        subAreas: [],
 
-        });
+    });
+
+    const handleFilterSearch = async (filtro) => {
+        // Lógica para filtrar en función de 'filtro'
+        console.log('Buscando con filtro:', filtro);
+        // Realiza la lógica necesaria para filtrar y actualiza los resultados en el componente SearchFilter
+    };
+
     const handleReset = () => {
+
         setFormData({
-             study: '',
+            study: '',
             Institution: '',
             Area: '',
             subArea: '',
@@ -45,8 +63,8 @@ const FormularioConLogo = () => {
             id: '',
             areas: [],
             subAreas: [],
-        });
 
+        });
         setSubAreas([]);
         setGestion([]);
         setModalidadOptions([]);
@@ -54,188 +72,176 @@ const FormularioConLogo = () => {
         setDuracionOptions([]);
     };
 
+    const [searchResults, setSearchResults] = useState([]);
+    const [filtro, setFiltro] = useState([]);
+    const [institutions, setInstitutions] = useState([]);
+    const [areas, setAreas] = useState([]);
+    const [subAreas, setSubAreas] = useState([]);
+    const [espacioFormativo, setEspacioFormativo] = useState('');
+    const [gestionOptions, setGestion] = useState([]);
+    const [franjaHorariaOptions, setFranjaHorariaOptions] = useState([]);
+    const [duracionOptions, setDuracionOptions] = useState([]);
+    const [modalidadOptions, setModalidadOptions] = useState([]);
+    const [showResults, setShowResults] = useState(false);
+    const [name, setName] = useState('');
+    const [nivel, setNivel] = useState('');
+    const [domicilio, setDomicilio] = useState('');
 
-        const [searchResults, setSearchResults] = useState([]);
-        const [study, setStudy] = useState([]);
-        const [filtro, setFiltro   ] = useState([]);
-        const [institutions, setInstitutions] = useState([]);
-        const [areas, setAreas] = useState([]);
-        const [subAreas, setSubAreas] = useState([]);
-        const [espacioFormativo, setEspacioFormativo] = useState('');
-        const [gestionOptions, setGestion] = useState([]);
-        const [franjaHorariaOptions, setFranjaHorariaOptions] = useState([]);
-        const [duracionOptions, setDuracionOptions] = useState([]);
-        const [modalidadOptions, setModalidadOptions] = useState([]);
-        const [showResults, setShowResults] = useState(false);
+    const handleChange = async (e) => {
+        const {name, value} = e.target;
+        setFormData((prevState) => ({
+            ...prevState,
+            [name]: value || ' ',
+        }));
+        setSelectedInstitution({
+            id: '',
+            subAreas: [],
+        })
 
+        if (name === 'Area') {
+            const selectedArea = areas.find((area) => area.AREA === value);
 
+            console.log('Selected Area:', selectedArea);
 
-       const handleChange = async (e) => {
-            const {name, value} = e.target;
-
-            setFormData((prevState) => ({
-                ...prevState,
-                [name]: value || ' ',
-            }));
-            setSelectedInstitution({
-                id: '',
-                subAreas: [],
-            })
-            if (name === 'Area') {
-                const selectedArea = areas.find((area) => area.AREA === value);
-
-                console.log('Selected Area:', selectedArea);
-
-                if (selectedArea) {
-                    // Actualizar las subáreas en el estado
-                    setSubAreas(selectedArea?.SUBAREAS || []);
-                } else {
-                    // Si no hay área seleccionada, puedes reiniciar las subáreas
-                    setSubAreas([]);
-                }
-
-            } else if (name === 'SubArea') {
-                // Obtener espacio formativo
-                try {
-                    const responseEspacio = await fetch(
-                        `${apiUrl}espacio?area=${(formData.Area)}&subarea=${(value)}`,
-                        {
-                            method: 'get',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                        }
-                    );
-                    const responseData = await responseEspacio.json();
-                    setEspacioFormativo(responseData[0]?.ESPACIO_FORMATIVO || '');
-
-                    const responseGestion = await fetch(
-                        `${apiUrl}gestion?area=${(formData.Area)}&subArea=${(value)}`,
-                        {
-                            method: 'get',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                        }
-                    );
-
-                    const gestionData = await responseGestion.json();
-
-                    console.log('Opciones de Gestión:', gestionData);
-
-                    if (Array.isArray(gestionData)) {
-                        setGestion(gestionData.map((item) => item.GESTION));
-                    } else {
-                        // Manejar el caso en que gestionData no es un array
-                        console.error('La respuesta de la API no es un array:', gestionData);
-                        // Puedes establecer gestionOptions como un array vacío u otro valor predeterminado
-                        setGestion([]);
-                    }
-                    try {
-                        const responseModalidad = await fetch(
-                            `${apiUrl}modalidad?area=${formData.Area}&subArea=${value}`,
-                            {
-                                method: 'get',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                            }
-                        );
-
-                        const modalidadData = await responseModalidad.json();
-                        setModalidadOptions(modalidadData.map((item) => item.MODALIDAD));
-                        console.log('Modalidad:', modalidadData.map((item) => item.MODALIDAD));
-                    } catch (error) {
-                        console.error('Error al obtener opciones de Modalidad:', error);
-                    }
-
-                    // Obtener y actualizar franja horaria
-                    const responseFranjaHoraria = await fetch(
-                        `${apiUrl}horarios?keyword=${(formData.Area)}`,
-                        {
-                            method: 'get',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                        }
-                    );
-
-                    const franjaHorariaOptionsData = await responseFranjaHoraria.json();
-                    setFranjaHorariaOptions(franjaHorariaOptionsData.map((item) => item.FRANJA_HORARIA || ''));
-                    console.log('Franja Horaria:', franjaHorariaOptionsData.map((item) => item.FRANJA_HORARIA || ''));
-
-                    // Obtener y actualizar duración
-                    const responseDuracion = await fetch(
-                        `${apiUrl}duracion?area=${(formData.Area)}&subArea=${(value)}`,
-                        {
-                            method: 'get',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                        }
-                    );
-                    const duracionData = await responseDuracion.json();
-                    setDuracionOptions(duracionData[0]?.DURACION || '');
-                    console.log('Duración:', duracionData[0]?.DURACION || '');
-
-
-                } catch (error) {
-                    console.error('Error al obtener información adicional:', error);
-                }
+            if (selectedArea) {
+                // Actualizar las subáreas en el estado
+                setSubAreas(selectedArea?.SUBAREAS || []);
+            } else {
+                // Si no hay área seleccionada, puedes reiniciar las subáreas
+                setSubAreas([]);
             }
-        };
 
-        const handleSubmit = async (e) => {
-            e.preventDefault();
+        } else if (name === 'SubArea') {
+            // Obtener espacio formativo
             try {
-                const responses = [];
+                const responseEspacio = await fetch(
+                    `${apiUrl}espacio?area=${(formData.Area)}&subarea=${(value)}`,
+                    {
+                        method: 'get',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
 
-             /*   // Búsqueda por palabras
-                if (formData.study.trim() !== '') {
-                    const responseStudy = await performSearch('search', `palabraClave=${formData.study}`);
-                    responses.push({type: 'study', data: responseStudy});
+                const responseData = await responseEspacio.json();
+                setEspacioFormativo(responseData[0]?.ESPACIO_FORMATIVO || '');
+
+                const responseGestion = await fetch(
+                    `${apiUrl}gestion?area=${(formData.Area)}&subArea=${(value)}`,
+                    {
+                        method: 'get',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+
+                const gestionData = await responseGestion.json();
+
+                console.log('Opciones de Gestión:', gestionData);
+
+                if (Array.isArray(gestionData)) {
+                    setGestion(gestionData.map((item) => item.GESTION));
+                } else {
+                    // Manejar el caso en que gestionData no es un array
+                    console.error('La respuesta de la API no es un array:', gestionData);
+                    // Puedes establecer gestionOptions como un array vacío u otro valor predeterminado
+                    setGestion([]);
+                }
+                try {
+                    const responseModalidad = await fetch(
+                        `${apiUrl}modalidad?area=${formData.Area}&subArea=${value}`,
+                        {
+                            method: 'get',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        }
+                    );
+
+                    const modalidadData = await responseModalidad.json();
+                    setModalidadOptions(modalidadData.map((item) => item.MODALIDAD));
+                    console.log('Modalidad:', modalidadData.map((item) => item.MODALIDAD));
+                } catch (error) {
+                    console.error('Error al obtener opciones de Modalidad:', error);
                 }
 
-                console.log('palabraClave:', formData.study)
-                console.log('a ver que trae este responses:', responses)
+                // Obtener y actualizar franja horaria
+                const responseFranjaHoraria = await fetch(
+                    `${apiUrl}horarios?keyword=${(formData.Area)}`,
+                    {
+                        method: 'get',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
 
-*/
+                const franjaHorariaOptionsData = await responseFranjaHoraria.json();
+                setFranjaHorariaOptions(franjaHorariaOptionsData.map((item) => item.FRANJA_HORARIA || ''));
+                console.log('Franja Horaria:', franjaHorariaOptionsData.map((item) => item.FRANJA_HORARIA || ''));
 
-                // Búsqueda por filtros
-                if (
-                    formData.Institution !== undefined &&
-                    formData.Area !== undefined &&
-                    formData.subArea !== undefined &&
-                    formData.modalidad !== undefined &&
-                    formData.espacioFormativo !== undefined &&
-                    formData.franjaHoraria !== undefined &&
-                    formData.gestion !== undefined &&
-                    formData.duracion !== undefined &&
-                    formData.Institution.trim() !== '' &&
-                    formData.Area.trim() !== '' &&
-                    formData.subArea.trim() !== '' &&
-                    formData.modalidad.trim() !== '' &&
-                    formData.espacioFormativo.trim() !== '' &&
-                    formData.franjaHoraria.trim() !== '' &&
-                    formData.gestion.trim() !== '' &&
-                    formData.duracion.trim() !== ''
-                ) {
-                    const filterParams = `institucion=${formData.Institution}&area=${formData.Area}&subArea=${formData.subArea}&modalidad=${formData.modalidad}&espacioFormativo=${formData.espacioFormativo}&franjaHoraria=${formData.franjaHoraria}&gestion=${formData.gestion}&duracion=${formData.duracion}`;
-                    const responseFilter = await performSearch('filter', filterParams);
-                    responses.push({ type: 'filter', data: responseFilter });
-                }
+                // Obtener y actualizar duración
+                const responseDuracion = await fetch(
+                    `${apiUrl}duracion?area=${(formData.Area)}&subArea=${(value)}`,
+                    {
+                        method: 'get',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+                const duracionData = await responseDuracion.json();
+                setDuracionOptions(duracionData[0]?.DURACION || '');
+                console.log('Duración:', duracionData[0]?.DURACION || '');
 
-                const results = responses.map(({ type, data }) => ({ type, data }));
-                setSearchResults(results);
-                setShowResults(true); // Agrega esta línea para mostrar los resultados
-                console.log('Results:', results);
-                console.log('Responses:', responses);
-            }   catch (error) {
-                console.error('Error en la solicitud al servidor:', error);
+
+            } catch (error) {
+                console.error('Error al obtener información adicional:', error);
             }
-        };
+        }
+    };
 
-        // Función auxiliar para realizar una búsqueda genérica
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const responses = [];
+
+            // Búsqueda por filtros
+            if (
+                formData.Institution !== undefined &&
+                formData.Area !== undefined &&
+                formData.subArea !== undefined &&
+                formData.modalidad !== undefined &&
+                formData.espacioFormativo !== undefined &&
+                formData.franjaHoraria !== undefined &&
+                formData.gestion !== undefined &&
+                formData.duracion !== undefined &&
+                formData.Institution.trim() !== '' &&
+                formData.Area.trim() !== '' &&
+                formData.subArea.trim() !== '' &&
+                formData.modalidad.trim() !== '' &&
+                formData.espacioFormativo.trim() !== '' &&
+                formData.franjaHoraria.trim() !== '' &&
+                formData.gestion.trim() !== '' &&
+                formData.duracion.trim() !== ''
+            ) {
+                const filterParams = `institucion=${formData.Institution}&area=${formData.Area}&subArea=${formData.subArea}&modalidad=${formData.modalidad}&espacioFormativo=${formData.espacioFormativo}&franjaHoraria=${formData.franjaHoraria}&gestion=${formData.gestion}&duracion=${formData.duracion}`;
+                const responseFilter = await performSearch('filter', filterParams);
+                responses.push({type: 'filter', data: responseFilter});
+            }
+
+            const results = responses.map(({type, data}) => ({type, data}));
+            setSearchResults(results);
+            setShowResults(true); // Agrega esta línea para mostrar los resultados
+            console.log('Results:', results);
+            console.log('Responses:', responses);
+        } catch (error) {
+            console.error('Error en la solicitud al servidor:', error);
+        }
+    };
+
     const performSearch = async (type, params) => {
         try {
             const response = await fetch(`${apiUrl}filter?type=${type}&${params}`, {
@@ -262,26 +268,43 @@ const FormularioConLogo = () => {
         }
     };
 
-
-
-
-
     useEffect(() => {
 
-          /*  const fetchStudy = async () => {
-                try {
-                    const response = await fetch(
-                        `${apiUrl}/search?palabraClave=${formData.study}`
-                    );
-                    const data = await response.json();
-                    setStudy(data);
-                } catch (error) {
-                    console.error('Error al cargar la lista estudios:', error);
-                }
-            };
-*/
-          //   Búsqueda por filtros
+        //busqueda del nombre
+        const fetchName = async () => {
+            try {
+                const response = await fetch(`${apiUrl}name?nombre=${formData.name}`);
+                const data = await response.json();
+                console.log('Nombre:', data);
+                setName(data);
+            } catch (error) {
+                console.error('Error al cargar el nombre:', error);
+            }
+        }
+        //busqueda del nivel
+        const fetchNivel = async () => {
+            try {
+                const response = await fetch(`${apiUrl}level?nivel=${formData.nivel}`);
+                const data = await response.json();
+                console.log('Nivel:', data);
+                setNivel(data);
+            } catch (error) {
+                console.error('Error al cargar el nivel:', error);
+            }
+        }
+        //busqueda del domicilio
+        const fetchDomicilio = async () => {
+            try {
+                const response = await fetch(`${apiUrl}address?domicilio=${formData.domicilio}`);
+                const data = await response.json();
+                console.log('Domicilio:', data);
+                setDomicilio(data);
+            } catch (error) {
+                console.error('Error al cargar el domicilio:', error);
+            }
+        };
 
+          //   Búsqueda por filtros
         const fecthSearchFilter = async () => {
             try {
                 const queryParams = {
@@ -295,20 +318,26 @@ const FormularioConLogo = () => {
                     duracion: formData.duracion || '',
                 };
 
-                // Filtrar los parámetros que tienen un valor definido
-                const filteredParams = Object.entries(queryParams)
-                    .filter(([key, value]) => value !== undefined && value !== null)
-                    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-                    .join('&');
+                // Verificar si al menos un campo tiene un valor definido
+                const hasValues = Object.values(queryParams).some(value => value !== undefined && value.trim() !== '');
 
-                const response = await fetch(`${apiUrl}filter?${filteredParams}`, {
-                    method: 'GET',  // Coloca la propiedad 'method' dentro del bloque de configuración
-                });
+                if (hasValues) {
+                    // Filtrar los parámetros que tienen un valor definido
+                    const filteredParams = Object.entries(queryParams)
+                        .filter(([key, value]) => value !== undefined && value.trim() !== '')
+                        .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+                        .join('&');
 
-                const data = await response.json();
-                setFiltro(data);
-                console.log('a ver que trae data:', data);
-                console.log('a ver que trae formData:', formData);
+                    const response = await fetch(`${apiUrl}filter?${filteredParams}`, {
+                        method: 'GET',
+                    });
+
+                    const data = await response.json();
+                    setFiltro(data);
+                    console.log('a ver que trae data:', data);
+                } else {
+                    console.log('No hay campos con valores definidos para realizar la búsqueda.');
+                }
             } catch (error) {
                 console.error('Error al cargar los filtros:', error);
             }
@@ -324,7 +353,6 @@ const FormularioConLogo = () => {
                     console.error('Error al cargar la lista de instituciones:', error);
                 }
             };
-
             const fetchAreas = async () => {
                 try {
                     const response = await fetch(`${apiUrl}area`);
@@ -391,7 +419,6 @@ const FormularioConLogo = () => {
                     const gestionData = await response.json();
                     setGestion(Array.isArray(gestionData) ? gestionData.map((item) => item.GESTION) : []);
 
-
                     // Verificar el tipo de data y manejarlo en consecuencia
                     let gestionOptionsArray = [];
                     if (typeof gestionData === 'string') {
@@ -401,7 +428,6 @@ const FormularioConLogo = () => {
                         // Si la respuesta es un array, usarla directamente
                         gestionOptionsArray = gestionData;
                     }
-
                     // Actualizar el estado
                     setGestion(gestionOptionsArray);
 
@@ -433,7 +459,7 @@ const FormularioConLogo = () => {
                     console.error('Error al obtener opciones de duración:', error);
                 }
             };
-        //    fetchStudy();
+
             fecthSearchFilter();
             fetchInstitutions();
             fetchAreas();
@@ -445,6 +471,11 @@ const FormularioConLogo = () => {
             fetchGestionOptions();
             fetchFranjaHorariaOptions();
             fetchDuracionOptions();
+
+           fetchDomicilio();
+           fetchNivel();
+           fetchName();
+
         }, [apiUrl, formData.study, formData.Area]);
 
         console.log('Modalidad Options:', modalidadOptions);
@@ -454,21 +485,9 @@ const FormularioConLogo = () => {
                 <div className="row">
                     <div className="col-md-8">
                         <form onSubmit={handleSubmit}>
-                            <div className="row">
-                                <div className="col-md-12 mb-xl-4">
-                                    <label htmlFor="study">
-                                        Qué quieres estudiar o aprender?
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="study"
-                                        className="form-control"
-                                        name="study"
-                                        value={formData.study}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                            </div>
+                            <SearchFilter
+                                onFilterSearch={handleFilterSearch}
+                            />
                             <div className="row">
                                 <div className="col-md-4 mb-3">
                                     <label htmlFor="Institution" aria-label="Seleccionar institución">
@@ -491,7 +510,6 @@ const FormularioConLogo = () => {
                                                 </option>
                                             ))}
                                         </select>
-
                                     </label>
                                 </div>
                                 <div className="col-md-4 mb-3">
@@ -546,7 +564,6 @@ const FormularioConLogo = () => {
                                             onChange={handleChange}
                                         />
                                         <option value="" disabled>
-
                                         </option>
                                     </label>
                                 </div>
@@ -590,7 +607,6 @@ const FormularioConLogo = () => {
                                             ))}
                                         </select>
                                     </label>
-
                                 </div>
                                 <div className="col-md-4 mb-3">
                                     <label htmlFor="franjaHoraria">
@@ -637,20 +653,15 @@ const FormularioConLogo = () => {
                                         </select>
                                     </label>
                                 </div>
-
-                                <div className="row mt-4">
+                                <div className="row mt-">
                                     <div className="col-md-6 mb-3">
                                         <button type="submit" className="btn btn-primary" >
                                             Buscar
                                         </button>
                                     </div>
                                     <div className="col-md-6 mb-3">
-                                        <button
-                                            type="reset"
-                                            className="btn btn-secondary"
-                                            onClick={handleReset}
-                                        >
-                                            Limpiar búsqueda
+                                        <button type="submit" className="btn btn-primary" onClick={handleReset} onReset={handleReset}>
+                                            Reset
                                         </button>
                                     </div>
                                 </div>
@@ -674,5 +685,5 @@ const FormularioConLogo = () => {
         );
     }
 ;
+export default  FormularioConLogo;
 
-export default FormularioConLogo;
