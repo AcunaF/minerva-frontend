@@ -3,7 +3,7 @@ import DetallesComponent from '../details/DetallesComponent';
 
 const apiUrl = 'http://localhost:1521/api/';
 
-const FormResults = ({ results, show, formData, searchType }) => {
+const FormResults = ({ results, show, formData, searchType, onReset, onSearch  }) => {
     const columnasAMostrar = [
         'INSTITUCION',
         'AREA_1',
@@ -15,6 +15,10 @@ const FormResults = ({ results, show, formData, searchType }) => {
 
     const [detallesData, setDetallesData] = useState(null);
     const [mostrarDetalles, setMostrarDetalles] = useState(false);
+    const resetDetalles = () => {
+        setDetallesData(null);
+        setMostrarDetalles(false);
+    };
 
     const fetchDetails = async (result) => {
         try {
@@ -33,7 +37,6 @@ const FormResults = ({ results, show, formData, searchType }) => {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    // Puedes incluir otros encabezados según sea necesario
                 },
             });
 
@@ -71,11 +74,11 @@ const FormResults = ({ results, show, formData, searchType }) => {
     const handleCloseDetalles = () => {
         setDetallesData(null);
         setMostrarDetalles(false);
+        resetDetalles();
     };
 
     return (
         <div>
-            <h2>Resultados de la búsqueda</h2>
             {show &&
                 results.map(({ type, data }, index) => (
                     <div key={type}>
@@ -95,7 +98,7 @@ const FormResults = ({ results, show, formData, searchType }) => {
                                             <td>
                                                 <button
                                                     type="button"
-                                                    className="btn btn-link"
+                                                    className="btn btn-primary"
                                                     onClick={() => handleDetallesClick(result)}
                                                 >
                                                     Mas

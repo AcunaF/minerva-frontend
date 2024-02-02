@@ -3,10 +3,10 @@ import Logo from '../logo/logo.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import FormResults from './form-results';
 import SearchFilter from "../search-filter/search-filter";
-
-
 const apiUrl = 'http://localhost:1521/api/';
-const FormularioConLogo = () => {
+
+
+const FormularioConLogo = ({onReset}) => {
 
     const [formData, setFormData] = useState({
         institution: '',
@@ -249,13 +249,12 @@ const FormularioConLogo = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                // No se incluye el cuerpo en las solicitudes GET
+
             });
             console.log('a ver que trae este response:', response);
             console.log('Respuesta de la búsqueda por filtro:', response);
             if (response.ok) {
                 const data = await response.json();
-                // Realiza acciones con los resultados obtenidos (actualizar estado, etc.).
                 console.log('Resultados de la búsqueda:', data);
                 return data;
             } else {
@@ -269,40 +268,6 @@ const FormularioConLogo = () => {
     };
 
     useEffect(() => {
-
-        //busqueda del nombre
-        const fetchName = async () => {
-            try {
-                const response = await fetch(`${apiUrl}name?nombre=${formData.name}`);
-                const data = await response.json();
-                console.log('Nombre:', data);
-                setName(data);
-            } catch (error) {
-                console.error('Error al cargar el nombre:', error);
-            }
-        }
-        //busqueda del nivel
-        const fetchNivel = async () => {
-            try {
-                const response = await fetch(`${apiUrl}level?nivel=${formData.nivel}`);
-                const data = await response.json();
-                console.log('Nivel:', data);
-                setNivel(data);
-            } catch (error) {
-                console.error('Error al cargar el nivel:', error);
-            }
-        }
-        //busqueda del domicilio
-        const fetchDomicilio = async () => {
-            try {
-                const response = await fetch(`${apiUrl}address?domicilio=${formData.domicilio}`);
-                const data = await response.json();
-                console.log('Domicilio:', data);
-                setDomicilio(data);
-            } catch (error) {
-                console.error('Error al cargar el domicilio:', error);
-            }
-        };
 
           //   Búsqueda por filtros
         const fecthSearchFilter = async () => {
@@ -472,9 +437,9 @@ const FormularioConLogo = () => {
             fetchFranjaHorariaOptions();
             fetchDuracionOptions();
 
-           fetchDomicilio();
-           fetchNivel();
-           fetchName();
+          // fetchDomicilio();
+          // fetchNivel();
+           //fetchName();
 
         }, [apiUrl, formData.study, formData.Area]);
 
@@ -660,7 +625,7 @@ const FormularioConLogo = () => {
                                         </button>
                                     </div>
                                     <div className="col-md-6 mb-3">
-                                        <button type="submit" className="btn btn-primary" onClick={handleReset} onReset={handleReset}>
+                                        <button type="submit" className="btn btn-primary" onClick={onReset}>
                                             Reset
                                         </button>
                                     </div>
@@ -687,3 +652,38 @@ const FormularioConLogo = () => {
 ;
 export default  FormularioConLogo;
 
+
+/*  //busqueda del nombre
+  const fetchName = async () => {
+      try {
+          const response = await fetch(`${apiUrl}name?nombre=${formData.name}`);
+          const data = await response.json();
+          console.log('Nombre:', data);
+          setName(data);
+      } catch (error) {
+          console.error('Error al cargar el nombre:', error);
+      }
+  }
+  //busqueda del nivel
+  const fetchNivel = async () => {
+      try {
+          const response = await fetch(`${apiUrl}level?nivel=${formData.nivel}`);
+          const data = await response.json();
+          console.log('Nivel:', data);
+          setNivel(data);
+      } catch (error) {
+          console.error('Error al cargar el nivel:', error);
+      }
+  }
+  //busqueda del domicilio
+  const fetchDomicilio = async () => {
+      try {
+          const response = await fetch(`${apiUrl}address?domicilio=${formData.domicilio}`);
+          const data = await response.json();
+          console.log('Domicilio:', data);
+          setDomicilio(data);
+      } catch (error) {
+          console.error('Error al cargar el domicilio:', error);
+      }
+  };
+*/

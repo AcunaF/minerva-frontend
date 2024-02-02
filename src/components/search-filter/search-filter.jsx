@@ -17,6 +17,7 @@ const SearchFilter = ({ onFilterSearch, onReset, onChange,onSubmit  }) => {
         onReset();
     };
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -47,7 +48,7 @@ const SearchFilter = ({ onFilterSearch, onReset, onChange,onSubmit  }) => {
 
     return (
         <div className="container mt-1">
-            <div className="col-md-14 mb-xl-6 ml-auto">
+            <div className="col-md-16 mb-xl-6 ml-auto">
                 <label htmlFor="study">Qué quieres estudiar o aprender?</label>
                 <input
                     type="text"
@@ -91,7 +92,7 @@ const SearchFilter = ({ onFilterSearch, onReset, onChange,onSubmit  }) => {
                             </tbody>
                         </table>
                     ) : (
-                        <p></p>
+                      <p></p>
                     )}
                 </div>
 
@@ -99,5 +100,6 @@ const SearchFilter = ({ onFilterSearch, onReset, onChange,onSubmit  }) => {
         </div>
     );
 };
+
 
 export default SearchFilter;

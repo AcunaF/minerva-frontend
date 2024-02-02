@@ -28,7 +28,6 @@ const DetallesComponent = ({ onClose, detallesData }) => {
 
     return (
         <div className="detalles-container">
-            {/* Botón para cerrar detalles o mostrar el mensaje de confirmación */}
             <button
                 type="button"
                 className={`btn ${mostrarConfirmacion ? 'btn-primary' : 'btn-primary'}`}

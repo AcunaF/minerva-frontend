@@ -22,7 +22,6 @@ function App() {
                     <FormResults/>
                 </div>
             </main>
-
             <Footer/>
         </div>
     );
