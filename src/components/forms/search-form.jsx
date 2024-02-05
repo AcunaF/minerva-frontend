@@ -3,7 +3,9 @@ import Logo from '../logo/logo.jsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import FormResults from './form-results';
 import SearchFilter from "../search-filter/search-filter";
+import DetallesComponent from "../details/DetallesComponent";
 const apiUrl = 'http://localhost:1521/api/';
+
 
 
 const FormularioConLogo = ({onReset}) => {
@@ -23,13 +25,6 @@ const FormularioConLogo = ({onReset}) => {
         domicilio: '',
 
     });
-
-    const handleBuscar = (filtro) => {
-        // Lógica de búsqueda en la base de datos con el filtro proporcionado
-        // Actualiza el estado o realiza acciones según sea necesario
-        console.log('Realizar búsqueda con filtro:', filtro);
-    };
-
 
     const [selectedInstitution, setSelectedInstitution] = useState({
         id: '',
@@ -86,6 +81,19 @@ const FormularioConLogo = ({onReset}) => {
     const [name, setName] = useState('');
     const [nivel, setNivel] = useState('');
     const [domicilio, setDomicilio] = useState('');
+    const [showDetalles, setShowDetalles] = useState(false);
+    const [detallesData, setDetallesData] = useState(null);
+    const [mostrarDetalles, setMostrarDetalles] = useState(false);
+
+
+    const handleDetallesClick = (result) => {
+// Lógica para mostrar detalles
+        console.log('Mostrar detalles:', result);
+        setDetallesData(result);
+        setShowDetalles(true);
+
+       console.log('Result:', result);
+    };
 
     const handleChange = async (e) => {
         const {name, value} = e.target;
@@ -251,25 +259,20 @@ const FormularioConLogo = ({onReset}) => {
                 },
 
             });
-            console.log('a ver que trae este response:', response);
-            console.log('Respuesta de la búsqueda por filtro:', response);
+
             if (response.ok) {
                 const data = await response.json();
-                console.log('Resultados de la búsqueda:', data);
                 return data;
             } else {
-                console.error('Error al realizar la búsqueda:', response.statusText);
                 return null;
             }
         } catch (error) {
-            console.error('Error en la solicitud de búsqueda:', error);
             return null;
         }
     };
 
     useEffect(() => {
-
-          //   Búsqueda por filtros
+        //   Búsqueda por filtros
         const fecthSearchFilter = async () => {
             try {
                 const queryParams = {
@@ -620,12 +623,12 @@ const FormularioConLogo = ({onReset}) => {
                                 </div>
                                 <div className="row mt-">
                                     <div className="col-md-6 mb-3">
-                                        <button type="submit" className="btn btn-primary" >
+                                        <button type="submit" className="btn btn-primary">
                                             Buscar
                                         </button>
                                     </div>
                                     <div className="col-md-6 mb-3">
-                                        <button type="submit" className="btn btn-primary" onClick={onReset}>
+                                        <button type="submit" className="btn btn-primary" onClick={handleReset}>
                                             Reset
                                         </button>
                                     </div>
@@ -638,52 +641,20 @@ const FormularioConLogo = ({onReset}) => {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-md-12">
-                        <FormResults results={searchResults}
-                                     show={showResults}
-                                     handleDetailsClick={(result) => {
-                                         console.log('Detalles de:', result);
-                                     }}/>
+                    <div>
+                        {/* ... Otro contenido del formulario ... */}
+                        <FormResults
+                            results={searchResults}
+                            show={showResults}
+                            handleDetallesClick={handleDetallesClick}  // Pasar la función a FormResults
+                        />
+                        {showDetalles && detallesData && (
+                            <DetallesComponent detallesData={detallesData} onClose={() => setShowDetalles(false)} />
+                        )}
                     </div>
                 </div>
             </div>
         );
     }
 ;
-export default  FormularioConLogo;
-
-
-/*  //busqueda del nombre
-  const fetchName = async () => {
-      try {
-          const response = await fetch(`${apiUrl}name?nombre=${formData.name}`);
-          const data = await response.json();
-          console.log('Nombre:', data);
-          setName(data);
-      } catch (error) {
-          console.error('Error al cargar el nombre:', error);
-      }
-  }
-  //busqueda del nivel
-  const fetchNivel = async () => {
-      try {
-          const response = await fetch(`${apiUrl}level?nivel=${formData.nivel}`);
-          const data = await response.json();
-          console.log('Nivel:', data);
-          setNivel(data);
-      } catch (error) {
-          console.error('Error al cargar el nivel:', error);
-      }
-  }
-  //busqueda del domicilio
-  const fetchDomicilio = async () => {
-      try {
-          const response = await fetch(`${apiUrl}address?domicilio=${formData.domicilio}`);
-          const data = await response.json();
-          console.log('Domicilio:', data);
-          setDomicilio(data);
-      } catch (error) {
-          console.error('Error al cargar el domicilio:', error);
-      }
-  };
-*/
+export default FormularioConLogo;

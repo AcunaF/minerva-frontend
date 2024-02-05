@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import DetallesComponent from '../details/DetallesComponent';
 
-const apiUrl = 'http://localhost:1521/api/';
+const apiUrl = 'http://localhost:1521/api';
 
-const FormResults = ({ results, show, formData, searchType, onReset, onSearch  }) => {
+const FormResults = ({ results, show, handleDetallesClick }) => {
     const columnasAMostrar = [
         'INSTITUCION',
         'AREA_1',
@@ -11,29 +11,26 @@ const FormResults = ({ results, show, formData, searchType, onReset, onSearch  }
         'GESTION',
         'MODALIDAD',
         'ESPACIO_FORMATIVO',
+        'DURACION',
+        'FRANJA_HORARIA',
+
     ];
 
     const [detallesData, setDetallesData] = useState(null);
     const [mostrarDetalles, setMostrarDetalles] = useState(false);
+    const [resultIndex, setResultIndex] = useState(null);  // Nuevo estado para almacenar resultIndex
+
     const resetDetalles = () => {
         setDetallesData(null);
         setMostrarDetalles(false);
+        setResultIndex(null);  // Restablecer resultIndex al cerrar los detalles
     };
 
-    const fetchDetails = async (result) => {
+    const fetchDetails = async (formDataDetail, index) => {
         try {
-            const { nombre, espacioFormativo, nivel, institucion, domicilio, area } = result;
-
-            const queryParams = new URLSearchParams({
-                nombre: nombre || '',
-                espacioFormativo: espacioFormativo || '',
-                nivel: nivel || '',
-                institucion: institucion || '',
-                domicilio: domicilio || '',
-                area: area || '',
-            }).toString();
-
-            const response = await fetch(`${apiUrl}details?${queryParams}`, {
+            const detailsUrl = `/details?institucion=${encodeURIComponent(formDataDetail.INSTITUCION)}&area=${encodeURIComponent(formDataDetail.AREA_1)}&espacioFormativo=${encodeURIComponent(formDataDetail.ESPACIO_FORMATIVO)}&modalidad=${encodeURIComponent(formDataDetail.MODALIDAD)}&franjaHoraria=${encodeURIComponent(formDataDetail.FRANJA_HORARIA)}&gestion=${encodeURIComponent(formDataDetail.GESTION)}&nombre=${encodeURIComponent(formDataDetail.NOMBRE || '')}`;
+       //   const filterParams = `institucion=${formData.Institution}&area=${formData.Area}&subArea=${formData.subArea}&modalidad=${formData.modalidad}&espacioFormativo=${formData.espacioFormativo}&franjaHoraria=${formData.franjaHoraria}&gestion=${formData.gestion}&duracion=${formData.duracion}`;
+            const response = await fetch(`${apiUrl}/${detailsUrl}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -41,94 +38,86 @@ const FormResults = ({ results, show, formData, searchType, onReset, onSearch  }
             });
 
             if (!response.ok) {
-                throw new Error(`Error de red: ${response.status}`);
+                throw new Error(`Error al obtener detalles: ${response.status}`);
             }
 
             const data = await response.json();
             setDetallesData(data);
+            console.log('Detalles:', data);
+            setResultIndex(index);  // Almacenar resultIndex cuando se abren los detalles
         } catch (error) {
-            console.error('Error fetching details:', error);
-        }
-    };
-
-    const handleDetallesClick = (result) => {
-        // Si ya se está mostrando el detalle, cierra los detalles
-        if (detallesData) {
-            setDetallesData(null);
-            setMostrarDetalles(false);
-        } else {
-            // Si no se está mostrando el detalle, abre los detalles
-            const criteria = {
-                nombre: result.nombre || '',
-                espacioFormativo: result.espacioFormativo || '',
-                nivel: result.nivel || '',
-                institucion: result.institucion || '',
-                domicilio: result.domicilio || '',
-                area: result.area || '',
-            };
-            fetchDetails(criteria);
-            setMostrarDetalles(true);
+            console.error('Error fetching details:', error.message);
+            // Puedes manejar el error de manera específica aquí
         }
     };
 
     const handleCloseDetalles = () => {
-        setDetallesData(null);
-        setMostrarDetalles(false);
         resetDetalles();
     };
 
     return (
         <div>
-            {show &&
-                results.map(({ type, data }, index) => (
-                    <div key={type}>
-                        {data ? (
-                            <table className="table">
-                                <tbody>
-                                {Array.isArray(data) && data.length > 0 ? (
-                                    data.map((result, resultIndex) => (
-                                        <tr key={`${type}-${resultIndex}`}>
-                                            {columnasAMostrar.map((columna) => (
-                                                <td key={`${type}-${resultIndex}-${columna}`}>
-                                                    {columna === 'SUBAREA' && result.SUBAREA}
-                                                    {columna === 'AREA' && result.AREA}
-                                                    {columna !== 'SUBAREA' && columna !== 'AREA' && result[columna]}
-                                                </td>
-                                            ))}
-                                            <td>
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-primary"
-                                                    onClick={() => handleDetallesClick(result)}
-                                                >
-                                                    Mas
-                                                </button>
+            {show && results.map(({ type, data }, index) => (
+                <div key={type}>
+                    {data ? (
+                        <table className="table table-striped">
+                            <thead>
+                            <tr>
+                                {columnasAMostrar.map((columna) => (
+                                    <th key={columna}>{columna}</th>
+                                ))}
+                                <th>Mas Inf.</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {Array.isArray(data) && data.length > 0 ? (
+                                data.map((formDataDetail, resultIndex) => (
+                                    <tr key={`${type}-${resultIndex}`}>
+                                        {columnasAMostrar.map((columna) => (
+                                            <td key={columna}>
+                                                {columna === 'SUBAREA_1' ? formDataDetail.SUBAREA_1 : columna === 'AREA_1' ? formDataDetail.AREA_1 : formDataDetail[columna]}
                                             </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={columnasAMostrar.length + 1}>
-                                            No hay resultados para mostrar.
+                                        ))}
+                                        <td>
+                                            <button
+                                                type="button"
+                                                className={`btn btn-primary btn-sm ${mostrarDetalles && resultIndex === resultIndex ? 'active' : ''}`}
+                                                onClick={() => {
+                                                    if (mostrarDetalles && resultIndex === resultIndex) {
+                                                        resetDetalles();
+                                                    } else {
+                                                        fetchDetails(formDataDetail, index);
+                                                        setMostrarDetalles(true);
+                                                        // Utiliza la función proporcionada para manejar los detalles
+                                                        handleDetallesClick(formDataDetail);
+                                                    }
+                                                }}
+                                            >
+                                                {mostrarDetalles && resultIndex === resultIndex ? "Menos" : "Más"}
+                                            </button>
                                         </td>
                                     </tr>
-                                )}
-                                </tbody>
-                            </table>
-                        ) : (
-                            <div className="alert alert-danger" role="alert">
-                                No se pudo obtener la información de los resultados.
-                            </div>
-                        )}
-                    </div>
-                ))}
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={columnasAMostrar.length + 1}>
+                                        No hay resultados para mostrar.
+                                    </td>
+                                </tr>
+                            )}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <div className="alert alert-danger" role="alert">
+                            No se pudo obtener la información de los resultados.
+                        </div>
+                    )}
+                </div>
+            ))}
 
-            {/* Mostrar DetallesComponent si hay detallesData */}
-            {detallesData && (
-                <DetallesComponent detallesData={detallesData} onClose={handleCloseDetalles} />
-            )}
         </div>
     );
 };
 
 export default FormResults;
+
