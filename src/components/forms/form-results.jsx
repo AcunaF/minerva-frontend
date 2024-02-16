@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import DetallesComponent from '../details/DetallesComponent';
+import Modal from "../modal/modal";
 
 const apiUrl = 'http://localhost:1521/api';
 
@@ -43,21 +44,26 @@ const FormResults = ({ results, show, handleDetallesClick }) => {
 
             const data = await response.json();
             setDetallesData(data);
+            setResultIndex(index);
+            handleDetallesClick(data);
             console.log('Detalles:', data);
             setResultIndex(index);  // Almacenar resultIndex cuando se abren los detalles
+            console.log('resultIndex:', index);
         } catch (error) {
             console.error('Error fetching details:', error.message);
-            // Puedes manejar el error de manera específica aquí
+
         }
     };
 
     const handleCloseDetalles = () => {
+
         resetDetalles();
     };
 
     return (
+
         <div>
-            {show && results.map(({ type, data }, index) => (
+            {show && results.map(({type, data}, index) => (
                 <div key={type}>
                     {data ? (
                         <table className="table table-striped">
@@ -81,19 +87,16 @@ const FormResults = ({ results, show, handleDetallesClick }) => {
                                         <td>
                                             <button
                                                 type="button"
-                                                className={`btn btn-primary btn-sm ${mostrarDetalles && resultIndex === resultIndex ? 'active' : ''}`}
+                                                className={`btn btn-primary btn-sm ${mostrarDetalles && resultIndex === index ? 'active' : ''}`}
                                                 onClick={() => {
-                                                    if (mostrarDetalles && resultIndex === resultIndex) {
+                                                    if (mostrarDetalles && resultIndex === index) {
                                                         resetDetalles();
                                                     } else {
                                                         fetchDetails(formDataDetail, index);
                                                         setMostrarDetalles(true);
-                                                        // Utiliza la función proporcionada para manejar los detalles
-                                                        handleDetallesClick(formDataDetail);
                                                     }
-                                                }}
-                                            >
-                                                {mostrarDetalles && resultIndex === resultIndex ? "Menos" : "Más"}
+                                                }}>
+                                                {mostrarDetalles && resultIndex === index ? "Menos" : "Más"}
                                             </button>
                                         </td>
                                     </tr>
@@ -114,7 +117,11 @@ const FormResults = ({ results, show, handleDetallesClick }) => {
                     )}
                 </div>
             ))}
-
+            <Modal
+                detallesData={detallesData}
+                onClose={handleCloseDetalles}
+                mostrarDetalles={mostrarDetalles}
+            />
         </div>
     );
 };

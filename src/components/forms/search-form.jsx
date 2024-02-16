@@ -4,9 +4,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import FormResults from './form-results';
 import SearchFilter from "../search-filter/search-filter";
 import DetallesComponent from "../details/DetallesComponent";
+
 const apiUrl = 'http://localhost:1521/api/';
-
-
 
 const FormularioConLogo = ({onReset}) => {
 
@@ -23,24 +22,18 @@ const FormularioConLogo = ({onReset}) => {
         name: '',
         nivel: '',
         domicilio: '',
-
-    });
-
-    const [selectedInstitution, setSelectedInstitution] = useState({
-        id: '',
-        areas: [],
-        subAreas: [],
+        study: '',
 
     });
 
     const handleFilterSearch = async (filtro) => {
         // Lógica para filtrar en función de 'filtro'
+
         console.log('Buscando con filtro:', filtro);
-        // Realiza la lógica necesaria para filtrar y actualiza los resultados en el componente SearchFilter
     };
 
-    const handleReset = () => {
-
+    const handleReset = (e) => {
+        e.preventDefault();
         setFormData({
             study: '',
             Institution: '',
@@ -52,19 +45,22 @@ const FormularioConLogo = ({onReset}) => {
             duracion: '',
             franjaHoraria: '',
             search: '',
-        });
-
-        setSelectedInstitution({
-            id: '',
-            areas: [],
-            subAreas: [],
+            name: '',
+            nivel: '',
+            domicilio: '',
 
         });
+
         setSubAreas([]);
         setGestion([]);
         setModalidadOptions([]);
         setFranjaHorariaOptions([]);
         setDuracionOptions([]);
+        setEspacioFormativo('');
+        setShowResults(false);
+        setShowDetalles(false);
+        setDetallesData(null);
+
     };
 
     const [searchResults, setSearchResults] = useState([]);
@@ -78,33 +74,25 @@ const FormularioConLogo = ({onReset}) => {
     const [duracionOptions, setDuracionOptions] = useState([]);
     const [modalidadOptions, setModalidadOptions] = useState([]);
     const [showResults, setShowResults] = useState(false);
-    const [name, setName] = useState('');
-    const [nivel, setNivel] = useState('');
-    const [domicilio, setDomicilio] = useState('');
     const [showDetalles, setShowDetalles] = useState(false);
     const [detallesData, setDetallesData] = useState(null);
-    const [mostrarDetalles, setMostrarDetalles] = useState(false);
 
 
     const handleDetallesClick = (result) => {
-// Lógica para mostrar detalles
+        // Lógica para mostrar detalles
         console.log('Mostrar detalles:', result);
         setDetallesData(result);
-        setShowDetalles(true);
+        setShowDetalles(true); // Establecer showDetalles a true aquí
 
-       console.log('Result:', result);
+        console.log('Result:', result);
     };
 
     const handleChange = async (e) => {
         const {name, value} = e.target;
-        setFormData((prevState) => ({
-            ...prevState,
-            [name]: value || ' ',
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
         }));
-        setSelectedInstitution({
-            id: '',
-            subAreas: [],
-        })
 
         if (name === 'Area') {
             const selectedArea = areas.find((area) => area.AREA === value);
@@ -202,6 +190,10 @@ const FormularioConLogo = ({onReset}) => {
                 );
                 const duracionData = await responseDuracion.json();
                 setDuracionOptions(duracionData[0]?.DURACION || '');
+                const filterParams = `subArea=${value}`;
+                const responseFilter = await performSearch('filter', filterParams);
+                setSearchResults([{type: 'filter', data: responseFilter}]);
+                setShowResults(true);
                 console.log('Duración:', duracionData[0]?.DURACION || '');
 
 
@@ -217,28 +209,9 @@ const FormularioConLogo = ({onReset}) => {
             const responses = [];
 
             // Búsqueda por filtros
-            if (
-                formData.Institution !== undefined &&
-                formData.Area !== undefined &&
-                formData.subArea !== undefined &&
-                formData.modalidad !== undefined &&
-                formData.espacioFormativo !== undefined &&
-                formData.franjaHoraria !== undefined &&
-                formData.gestion !== undefined &&
-                formData.duracion !== undefined &&
-                formData.Institution.trim() !== '' &&
-                formData.Area.trim() !== '' &&
-                formData.subArea.trim() !== '' &&
-                formData.modalidad.trim() !== '' &&
-                formData.espacioFormativo.trim() !== '' &&
-                formData.franjaHoraria.trim() !== '' &&
-                formData.gestion.trim() !== '' &&
-                formData.duracion.trim() !== ''
-            ) {
-                const filterParams = `institucion=${formData.Institution}&area=${formData.Area}&subArea=${formData.subArea}&modalidad=${formData.modalidad}&espacioFormativo=${formData.espacioFormativo}&franjaHoraria=${formData.franjaHoraria}&gestion=${formData.gestion}&duracion=${formData.duracion}`;
-                const responseFilter = await performSearch('filter', filterParams);
-                responses.push({type: 'filter', data: responseFilter});
-            }
+            const filterParams = `institucion=${formData.Institution || ''}&area=${formData.Area || ''}&subArea=${formData.subArea || ''}&modalidad=${formData.modalidad || ''}&espacioFormativo=${formData.espacioFormativo || ''}&franjaHoraria=${formData.franjaHoraria || ''}&gestion=${formData.gestion || ''}&duracion=${formData.duracion || ''}`;
+            const responseFilter = await performSearch('filter', filterParams);
+            responses.push({type: 'filter', data: responseFilter});
 
             const results = responses.map(({type, data}) => ({type, data}));
             setSearchResults(results);
@@ -331,17 +304,23 @@ const FormularioConLogo = ({onReset}) => {
                     console.error('Error al cargar la lista de áreas:', error);
                 }
             };
-            const fetchSubAreas = async (selectedArea) => {
-                try {
+        const fetchSubAreas = async (selectedArea) => {
+            try {
+                // Verificar si selectedArea tiene un valor antes de convertirlo a una cadena
+                if (selectedArea) {
                     selectedArea = String(selectedArea);
                     const response = await fetch(`${apiUrl}subArea?area=${selectedArea}`);
                     const data = await response.json();
                     console.log('Subáreas este:', data);
                     setSubAreas(data);
-                } catch (error) {
-                    console.error('Error al cargar la lista de subáreas:', error);
+                } else {
+                    // Si selectedArea es undefined o null, puedes establecer subAreas como un array vacío
+                    setSubAreas([]);
                 }
-            };
+            } catch (error) {
+                console.error('Error al cargar la lista de subáreas:', error);
+            }
+        };
             const fetchEspacioFormativo = async () => {
                 try {
                     const response = await fetch(`${apiUrl}espacio?area=${formData.Area}&subArea=${formData.subArea}`);
@@ -449,17 +428,21 @@ const FormularioConLogo = ({onReset}) => {
         console.log('Modalidad Options:', modalidadOptions);
 
         return (
-            <div className="Container  border p-4 mt-5">
+
+            <div className="Container border p-2 mt-5">
                 <div className="row">
                     <div className="col-md-8">
                         <form onSubmit={handleSubmit}>
                             <SearchFilter
                                 onFilterSearch={handleFilterSearch}
+                                onReset={handleReset}
+                                onChange={handleChange}
+                                handleDetallesClick={handleDetallesClick}
                             />
                             <div className="row">
                                 <div className="col-md-4 mb-3">
                                     <label htmlFor="Institution" aria-label="Seleccionar institución">
-                                        Institución:
+                                        Donde le gustaria estudiar?
                                         <select
                                             className="form-control"
                                             name="Institution"
@@ -482,7 +465,7 @@ const FormularioConLogo = ({onReset}) => {
                                 </div>
                                 <div className="col-md-4 mb-3">
                                     <label htmlFor="Area">
-                                        Área:
+                                        Que área
                                         <select
                                             className="form-control"
                                             name="Area"
@@ -553,7 +536,6 @@ const FormularioConLogo = ({onReset}) => {
                                                 </option>
                                             ))}
                                         </select>
-
                                     </label>
                                 </div>
                                 <div className="col-md-4 mb-3">
@@ -621,14 +603,14 @@ const FormularioConLogo = ({onReset}) => {
                                         </select>
                                     </label>
                                 </div>
-                                <div className="row mt-">
+                                <div className="row mt-4">
                                     <div className="col-md-6 mb-3">
                                         <button type="submit" className="btn btn-primary">
                                             Buscar
                                         </button>
                                     </div>
                                     <div className="col-md-6 mb-3">
-                                        <button type="submit" className="btn btn-primary" onClick={handleReset}>
+                                        <button type="button" className="btn btn-primary" onClick={handleReset}>
                                             Reset
                                         </button>
                                     </div>
@@ -642,7 +624,7 @@ const FormularioConLogo = ({onReset}) => {
                 </div>
                 <div className="row">
                     <div>
-                        {/* ... Otro contenido del formulario ... */}
+
                         <FormResults
                             results={searchResults}
                             show={showResults}

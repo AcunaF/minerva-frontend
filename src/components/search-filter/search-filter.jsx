@@ -1,30 +1,30 @@
 import React, { useState } from 'react';
+import { BiSearch } from 'react-icons/bi';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import searchForm from "../forms/search-form";
 
-const backendUrl = 'http://localhost:1521/api';
+const backendUrl = 'http://localhost:1521/api/';
 
-const SearchFilter = ({ onFilterSearch, onReset, onChange,onSubmit  }) => {
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [resultados, setResultados] = useState([]);
-    const [filtro, setFiltro] = useState('');
+const SearchFilter = ({ onFilterSearch, onReset, onChange }) => {
+    const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState('');
+    const [resultados, setResultados] = React.useState([]);
+    const [filtro, setFiltro] = React.useState('');
 
-    const handleReset = () => {
+    const handleResetFilter = (e) => {
+        e.preventDefault();
         setFiltro('');
         setResultados([]);
         setError('');
-        onChange('search', '');
-        onReset();
+        onChange(e);
     };
-
-
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         try {
             setLoading(true);
+            // Llamada a la función proporcionada desde las props para manejar la búsqueda
             await onFilterSearch(filtro);
-
             const response = await fetch(`${backendUrl}/search?area&modalidad&institucion&duracion&subarea&nombre=${filtro}&espacioFormativo&gestion&`, {
                 method: 'GET',
                 headers: {
@@ -47,24 +47,35 @@ const SearchFilter = ({ onFilterSearch, onReset, onChange,onSubmit  }) => {
     };
 
     return (
-        <div className="container mt-1">
-            <div className="col-md-16 mb-xl-6 ml-auto">
-                <label htmlFor="study">Qué quieres estudiar o aprender?</label>
-                <input
-                    type="text"
-                    id="search"
-                    className="form-control"
-                    name="study"
-                    value={filtro}
-                    onChange={(e) => setFiltro(e.target.value)}
-                />
+        <div className="">
+            <div className="col-md-12 mb-6 ml-auto">
+                <label htmlFor="search">Qué quieres estudiar o aprender?</label>
+                <div className="input-group">
+                    <input
+                        type="text"
+                        id="search"
+                        className="form-control"
+                        name="study"
+                        value={filtro}
+                        onChange={(e) => setFiltro(e.target.value)}
+                    />
+                    <div className="input-group-append">
+                        <button className="btn btn-light" type="button" onClick={handleSubmit}
+                                disabled={loading}>
+                            {loading ? 'Loading...' : <BiSearch style={{marginRight: '5px'}}/>}
+                        </button>
+                        <button className="btn btn-light" type="button" onClick={(e) => handleResetFilter(e)}>
+                            Reset
+                        </button>
+                    </div>
+                </div>
             </div>
             {error && <div className="text-danger mt-2">{error}</div>}
             <div className="mt-4">
                 <div className="container mt-4">
                     {resultados.length > 0 ? (
-                        <table className="table table-striped">
-                            <thead>
+                        <table className="table table-striped table-bordered">
+                        <thead className="thead-dark">
                             <tr>
                                 <th>Institución</th>
                                 <th>Nombre</th>
@@ -92,14 +103,12 @@ const SearchFilter = ({ onFilterSearch, onReset, onChange,onSubmit  }) => {
                             </tbody>
                         </table>
                     ) : (
-                      <p></p>
+                        <p>No hay resultados para mostrar.</p>
                     )}
                 </div>
-
             </div>
         </div>
     );
 };
-
 
 export default SearchFilter;
