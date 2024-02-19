@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BiSearch } from 'react-icons/bi';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import searchForm from "../forms/search-form";
+
 
 const backendUrl = 'http://localhost:1521/api/';
 
@@ -47,27 +47,24 @@ const SearchFilter = ({ onFilterSearch, onReset, onChange }) => {
     };
 
     return (
-        <div className="">
-            <div className="col-md-12 mb-6 ml-auto">
-                <label htmlFor="search">Qué quieres estudiar o aprender?</label>
-                <div className="input-group">
-                    <input
-                        type="text"
-                        id="search"
-                        className="form-control"
-                        name="study"
-                        value={filtro}
-                        onChange={(e) => setFiltro(e.target.value)}
-                    />
-                    <div className="input-group-append">
-                        <button className="btn btn-light" type="button" onClick={handleSubmit}
-                                disabled={loading}>
-                            {loading ? 'Loading...' : <BiSearch style={{marginRight: '5px'}}/>}
-                        </button>
-                        <button className="btn btn-light" type="button" onClick={(e) => handleResetFilter(e)}>
-                            Reset
-                        </button>
-                    </div>
+        <div className="input-group">
+            <div className="input-group">
+                <input
+                    type="text"
+                    id="search"
+                    className="form-control"
+                    name="study"
+                    value={filtro}
+                    onChange={(e) => setFiltro(e.target.value)}
+                />
+                <div className="input-group-append">
+                    <button type="button" className="btn btn-primary btn-margin" onClick={handleSubmit}
+                            disabled={loading}>
+                        {loading ? 'Loading...' : <BiSearch style={{marginRight: '5px'}}/>}
+                    </button>
+                    <button type="button" className="btn btn-primary btn-margin" onClick={(e) => handleResetFilter(e)}>
+                        Reset
+                    </button>
                 </div>
             </div>
             {error && <div className="text-danger mt-2">{error}</div>}
@@ -75,7 +72,7 @@ const SearchFilter = ({ onFilterSearch, onReset, onChange }) => {
                 <div className="container mt-4">
                     {resultados.length > 0 ? (
                         <table className="table table-striped table-bordered">
-                        <thead className="thead-dark">
+                            <thead className="thead-dark">
                             <tr>
                                 <th>Institución</th>
                                 <th>Nombre</th>
@@ -103,7 +100,7 @@ const SearchFilter = ({ onFilterSearch, onReset, onChange }) => {
                             </tbody>
                         </table>
                     ) : (
-                        <p>No hay resultados para mostrar.</p>
+                        <p></p>
                     )}
                 </div>
             </div>

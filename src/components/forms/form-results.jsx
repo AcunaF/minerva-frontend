@@ -29,7 +29,7 @@ const FormResults = ({ results, show, handleDetallesClick }) => {
 
     const fetchDetails = async (formDataDetail, index) => {
         try {
-            const detailsUrl = `/details?institucion=${encodeURIComponent(formDataDetail.INSTITUCION)}&area=${encodeURIComponent(formDataDetail.AREA_1)}&espacioFormativo=${encodeURIComponent(formDataDetail.ESPACIO_FORMATIVO)}&modalidad=${encodeURIComponent(formDataDetail.MODALIDAD)}&franjaHoraria=${encodeURIComponent(formDataDetail.FRANJA_HORARIA)}&gestion=${encodeURIComponent(formDataDetail.GESTION)}&nombre=${encodeURIComponent(formDataDetail.NOMBRE || '')}`;
+            const detailsUrl = `/details?institucion=${encodeURIComponent(formDataDetail.INSTITUCION)}&area=${encodeURIComponent(formDataDetail.AREA_1)}&subarea=${encodeURIComponent(formDataDetail.SUBAREA_1)}&espacioFormativo=${encodeURIComponent(formDataDetail.ESPACIO_FORMATIVO)}&modalidad=${encodeURIComponent(formDataDetail.MODALIDAD)}&franjaHoraria=${encodeURIComponent(formDataDetail.FRANJA_HORARIA)}&gestion=${encodeURIComponent(formDataDetail.GESTION)}&nombre=${encodeURIComponent(formDataDetail.NOMBRE || '')}`;
        //   const filterParams = `institucion=${formData.Institution}&area=${formData.Area}&subArea=${formData.subArea}&modalidad=${formData.modalidad}&espacioFormativo=${formData.espacioFormativo}&franjaHoraria=${formData.franjaHoraria}&gestion=${formData.gestion}&duracion=${formData.duracion}`;
             const response = await fetch(`${apiUrl}/${detailsUrl}`, {
                 method: 'GET',
