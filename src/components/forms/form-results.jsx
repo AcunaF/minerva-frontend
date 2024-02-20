@@ -111,9 +111,7 @@ const FormResults = ({ results, show, handleDetallesClick }) => {
                             </tbody>
                         </table>
                     ) : (
-                        <div className="alert alert-danger" role="alert">
-                            No se pudo obtener la información de los resultados.
-                        </div>
+                        <p> </p>
                     )}
                 </div>
             ))}

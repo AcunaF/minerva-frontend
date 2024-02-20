@@ -25,6 +25,8 @@ const FormularioConLogo = ({onReset}) => {
             study: '',
 
         });
+        const [selectedInstitution, setSelectedInstitution] = useState('');
+        const [formDataDetail, setFormDataDetail] = useState({institutions : ''})
         const [searchResults, setSearchResults] = useState([]);
         const [filtro, setFiltro] = useState([]);
         const [institutions, setInstitutions] = useState([]);
@@ -40,30 +42,50 @@ const FormularioConLogo = ({onReset}) => {
         const [detallesData, setDetallesData] = useState(null);
 
 
-        const handleFilterSearch = async (filtro) => {
-            // Lógica para filtrar en función de 'filtro'
+    const handleFilterSearch = async (filtro) => {
+        // Lógica para filtrar en función de 'filtro'
+        try {
+            const filteredParams = Object.entries(filtro)
+                .filter(([key, value]) => value !== undefined && value.trim() !== '')
+                .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+                .join('&');
 
-            console.log('Buscando con filtro:', filtro);
-        };
+            const response = await performSearch('filter', filteredParams);
+            setSearchResults([{ type: 'filter', data: response }]);
+            setShowResults(true);
+        } catch (error) {
+            console.error('Error en la búsqueda con filtro:', error);
+        }
+    };
 
     const performSearch = async (type, params) => {
         try {
-            const response = await fetch(`${apiUrl}${type}?${params}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+            // Verificar si se ha seleccionado un elemento de la lista
+            if (formData.institution) {
+                const url = `${apiUrl}${type}?${params}`;
+                console.log('URL:', url);
+                console.log('Params:', params);
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
 
-            console.log('parametros: ', params);
-            if (response.ok)
-            {
-                const data = await response.json();
-                return data;
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Data:', data);
+                    return data;
+                } else {
+                    console.log('Response not OK:', response);
+                    return null;
+                }
             } else {
+                console.log('No se ha seleccionado un elemento de la lista');
                 return null;
             }
         } catch (error) {
+            console.error('Error:', error);
             return null;
         }
     };
@@ -114,6 +136,7 @@ const FormularioConLogo = ({onReset}) => {
                 ...prevFormData,
                 [name]: value,
             }));
+
 
             if (name === 'Area') {
                 const selectedArea = areas.find((area) => area.AREA === value);
@@ -220,14 +243,14 @@ const FormularioConLogo = ({onReset}) => {
                 const responses = [];
 
                 // Búsqueda por filtros
-                const filterParams = `institucion=${formData.Institution || ''}&area=${formData.Area || ''}&subArea=${formData.subArea || ''}&modalidad=${formData.modalidad || ''}&espacioFormativo=${formData.espacioFormativo || ''}&franjaHoraria=${formData.franjaHoraria || ''}&gestion=${formData.gestion || ''}&duracion=${formData.duracion || ''}`;
+                const filterParams = `institucion=${formData.institution || ''}&area=${formData.Area || ''}&subArea=${formData.subArea || ''}&modalidad=${formData.modalidad || ''}&espacioFormativo=${formData.espacioFormativo || ''}&franjaHoraria=${formData.franjaHoraria || ''}&gestion=${formData.gestion || ''}&duracion=${formData.duracion || ''}`;
                 const responseFilter = await performSearch('filter', filterParams);
-                responses.push({type: 'filter', data: responseFilter});
+                responses.push({ type: 'filter', data: responseFilter });
 
 
-                const results = responses.map(({type, data}) => ({type, data}));
+                const results = responses.map(({ type, data }) => ({ type, data }));
                 setSearchResults(results);
-                setShowResults(true); // Agrega esta línea para mostrar los resultados
+                setShowResults(true);
                 console.log('Results:', results);
                 console.log('Responses:', responses);
             } catch (error) {
@@ -235,47 +258,9 @@ const FormularioConLogo = ({onReset}) => {
             }
         };
 
-
-
         useEffect(() => {
             //   Búsqueda por filtros
-            const fecthSearchFilter = async () => {
-                try {
-                    const queryParams = {
-                        institucion: formData.Institution || '',
-                        area: formData.Area || '',
-                        subArea: formData.subArea || '',
-                        modalidad: formData.modalidad || '',
-                        espacioFormativo: formData.espacioFormativo || '',
-                        franjaHoraria: formData.franjaHoraria || '',
-                        gestion: formData.gestion || '',
-                        duracion: formData.duracion || '',
-                    };
 
-                    // Verificar si al menos un campo tiene un valor definido
-                    const hasValues = Object.values(queryParams).some(value => value !== undefined && value.trim() !== '');
-
-                    if (hasValues) {
-                        // Filtrar los parámetros que tienen un valor definido
-                        const filteredParams = Object.entries(queryParams)
-                            .filter(([key, value]) => value !== undefined && value.trim() !== '')
-                            .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
-                            .join('&');
-
-                        const response = await fetch(`${apiUrl}filter?${filteredParams}`, {
-                            method: 'GET',
-                        });
-
-                        const data = await response.json();
-                        setFiltro(data);
-                        console.log('a ver que trae data:', data);
-                    } else {
-                        console.log('No hay campos con valores definidos para realizar la búsqueda.');
-                    }
-                } catch (error) {
-                    console.error('Error al cargar los filtros:', error);
-                }
-            };
             const fetchInstitutions = async () => {
                 try {
                     const response = await fetch(`${apiUrl}instituciones`);
@@ -285,7 +270,8 @@ const FormularioConLogo = ({onReset}) => {
                 } catch (error) {
                     console.error('Error al cargar la lista de instituciones:', error);
                 }
-            };
+            }
+
             const fetchAreas = async () => {
                 try {
                     const response = await fetch(`${apiUrl}area`);
@@ -404,10 +390,38 @@ const FormularioConLogo = ({onReset}) => {
                     console.error('Error al obtener opciones de duración:', error);
                 }
             };
+            const fecthSearchFilter = async () => {
+                try {
+                    const queryParams = {
+                        institucion: formData.institution || '',
+                        area: formData.Area || '',
+                        subArea: formData.subArea || '',
+                        modalidad: formData.modalidad || '',
+                        espacioFormativo: formData.espacioFormativo || '',
+                        franjaHoraria: formData.franjaHoraria || '',
+                        gestion: formData.gestion || '',
+                        duracion: formData.duracion || '',
+                    };
 
-            fecthSearchFilter();
+                    const filteredParams = Object.entries(queryParams)
+                        .filter(([key, value]) => value !== undefined && value.trim() !== '')
+                        .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+                        .join('&');
+
+                    const response = await performSearch('filter', filteredParams);
+                    setFiltro(response);
+                    console.log('a ver que trae data:', response);
+
+                    // Aplicar el filtro y actualizar los resultados
+                    handleFilterSearch(queryParams);
+                } catch (error) {
+                    console.error('Error al cargar los filtros:', error);
+                }
+            };
+
             fetchInstitutions();
-            fetchAreas();
+           fecthSearchFilter();
+           fetchAreas();
             if (formData.Area) {
                 fetchSubAreas(formData.Area);
             }
@@ -421,7 +435,7 @@ const FormularioConLogo = ({onReset}) => {
             // fetchNivel();
             //fetchName();
 
-        }, [apiUrl, formData.study, formData.Area]);
+        }, [apiUrl, formData.study,formData.institution, formData.Area]);
 
         return (
             <div className="Container border p-2 mt-5">
@@ -436,13 +450,13 @@ const FormularioConLogo = ({onReset}) => {
                             />
                             <div className="row">
                                 <div className="col-md-4 mb-3">
-                                    <label htmlFor="study" aria-label="Seleccionar study">
-                                        Donde le gustaria estudiar?
+                                    <label htmlFor="institution" aria-label="Seleccionar study">
+                                        Donde le gustaría estudiar?
                                         <select
                                             className="form-control"
-                                            name="study"
-                                            value={formData.study}
-                                            onChange={handleChange}
+                                            name="institution"
+                                            value={formData.institution}
+                                            onChange={(e) => handleChange(e)}
                                         >
                                             <option key="" value="" disabled>
                                                 Seleccione una institución
