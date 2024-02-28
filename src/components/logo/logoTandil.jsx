@@ -1,5 +1,4 @@
 import React from 'react';
-
 const LogoTandil = () => {
     return (
         <div className="emcabezado">

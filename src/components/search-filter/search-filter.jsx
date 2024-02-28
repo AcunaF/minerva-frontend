@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BiSearch } from 'react-icons/bi';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
+import Detalles from '../details/DetallesComponent';
 
 const backendUrl = 'http://localhost:1521/api/';
 
@@ -25,7 +25,7 @@ const SearchFilter = ({ onFilterSearch, onReset, onChange }) => {
             setLoading(true);
             // Llamada a la función proporcionada desde las props para manejar la búsqueda
             await onFilterSearch(filtro);
-            const response = await fetch(`${backendUrl}/search?area&modalidad&institucion&duracion&subarea&nombre=${filtro}&espacioFormativo&gestion&`, {
+            const response = await fetch(`${backendUrl}/search?area&institucion&subarea&nombre=${filtro}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -44,6 +44,8 @@ const SearchFilter = ({ onFilterSearch, onReset, onChange }) => {
         } finally {
             setLoading(false);
         }
+
+        console.log('resultados ',resultados)
     };
 
     return (
@@ -57,44 +59,36 @@ const SearchFilter = ({ onFilterSearch, onReset, onChange }) => {
                     value={filtro}
                     onChange={(e) => setFiltro(e.target.value)}
                 />
-                <div className="input-group-append">
-                    <button type="button" className="btn btn-primary btn-margin" onClick={handleSubmit}
-                            disabled={loading}>
-                        {loading ? 'Loading...' : <BiSearch style={{marginRight: '5px'}}/>}
-                    </button>
-                    <button type="button" className="btn btn-primary btn-margin" onClick={(e) => handleResetFilter(e)}>
-                        Reset
-                    </button>
-                </div>
+
             </div>
             {error && <div className="text-danger mt-2">{error}</div>}
+
             <div className="mt-4">
-                <div className="container mt-4">
+                <div >
                     {resultados.length > 0 ? (
                         <table className="table table-striped table-bordered">
                             <thead className="thead-dark">
                             <tr>
-                                <th>Institución</th>
                                 <th>Nombre</th>
-                                <th>Área</th>
-                                <th>Subárea</th>
                                 <th>Espacio Formativo</th>
-                                <th>Gestión</th>
-                                <th>Modalidad</th>
-                                <th>Duración</th>
+                                <th>Nivel</th>
+                                <th>Institucion</th>
+                                <th>Domicilio</th>
+                                <th>Area</th>
+                                <th>Mas Información</th>
+
                             </tr>
                             </thead>
                             <tbody>
                             {resultados.map((resultado, index) => (
                                 <tr key={index}>
-                                    <td>{resultado.INSTITUCION}</td>
-                                    <td>{resultado.NOMBRE}</td>
-                                    <td>{resultado.AREA}</td>
-                                    <td>{resultado.SUBAREA}</td>
+                                    <td>{resultado.Nombre}</td>
                                     <td>{resultado.ESPACIO_FORMATIVO}</td>
-                                    <td>{resultado.GESTION}</td>
-                                    <td>{resultado.MODALIDAD}</td>
-                                    <td>{resultado.DURACION}</td>
+                                    <td>{resultado.NIVEL}</td>
+                                    <td>{resultado.INSTITUCION}</td>
+                                    <td>{resultado.DOMICILIO}</td>
+                                    <td>{resultado.AREA}</td>
+
                                 </tr>
                             ))}
                             </tbody>

@@ -1,0 +1,27 @@
+.emcabezado {
+    position: relative;
+}
+
+.emcabezado-oscuro {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-size: cover;
+    background-position: center center;
+}
+
+.emcabezado-oscuro::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.titulo h2, .titulo h4 {
+    color: white !important;
+
+}
+

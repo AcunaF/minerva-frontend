@@ -2,21 +2,17 @@ import React, { useState } from 'react';
 import DetallesComponent from '../details/DetallesComponent';
 import Modal from "../modal/modal";
 
-const apiUrl = 'http://localhost:1521/api';
+const apiUrl = 'http://localhost:1521/api/';
 
-const FormResults = ({ results, show, handleDetallesClick }) => {
+const FormResults = ({ results, show,handleDetallesClick }) => {
     const columnasAMostrar = [
+        'NOMBRE',
         'INSTITUCION',
         'AREA_1',
-        'SUBAREA_1',
-        'GESTION',
-        'MODALIDAD',
         'ESPACIO_FORMATIVO',
-        'DURACION',
-        'FRANJA_HORARIA',
-
+        'NIVEL',
+        'DOMICILIO', // Ajuste: eliminé la duplicación de 'INSTITUCION'
     ];
-
     const [detallesData, setDetallesData] = useState(null);
     const [mostrarDetalles, setMostrarDetalles] = useState(false);
     const [resultIndex, setResultIndex] = useState(null);  // Nuevo estado para almacenar resultIndex
@@ -29,7 +25,7 @@ const FormResults = ({ results, show, handleDetallesClick }) => {
 
     const fetchDetails = async (formDataDetail, index) => {
         try {
-            const detailsUrl = `/details?institucion=${encodeURIComponent(formDataDetail.INSTITUCION)}&area=${encodeURIComponent(formDataDetail.AREA_1)}&subarea=${encodeURIComponent(formDataDetail.SUBAREA_1)}&espacioFormativo=${encodeURIComponent(formDataDetail.ESPACIO_FORMATIVO)}&modalidad=${encodeURIComponent(formDataDetail.MODALIDAD)}&franjaHoraria=${encodeURIComponent(formDataDetail.FRANJA_HORARIA)}&gestion=${encodeURIComponent(formDataDetail.GESTION)}&nombre=${encodeURIComponent(formDataDetail.NOMBRE || '')}`;
+            const detailsUrl = `details?institucion=${encodeURIComponent(formDataDetail.INSTITUCION)}&area=${encodeURIComponent(formDataDetail.AREA_1)}&subarea=${encodeURIComponent(formDataDetail.SUBAREA_1)}&espacioFormativo=${encodeURIComponent(formDataDetail.ESPACIO_FORMATIVO)}&modalidad=${encodeURIComponent(formDataDetail.MODALIDAD)}&franjaHoraria=${encodeURIComponent(formDataDetail.FRANJA_HORARIA)}&gestion=${encodeURIComponent(formDataDetail.GESTION)}&nombre=${encodeURIComponent(formDataDetail.NOMBRE || '')}`;
        //   const filterParams = `institucion=${formData.Institution}&area=${formData.Area}&subArea=${formData.subArea}&modalidad=${formData.modalidad}&espacioFormativo=${formData.espacioFormativo}&franjaHoraria=${formData.franjaHoraria}&gestion=${formData.gestion}&duracion=${formData.duracion}`;
             const response = await fetch(`${apiUrl}/${detailsUrl}`, {
                 method: 'GET',
@@ -49,20 +45,16 @@ const FormResults = ({ results, show, handleDetallesClick }) => {
             console.log('Detalles:', data);
             setResultIndex(index);  // Almacenar resultIndex cuando se abren los detalles
             console.log('resultIndex:', index);
+            setMostrarDetalles(!mostrarDetalles);
         } catch (error) {
             console.error('Error fetching details:', error.message);
 
         }
-    };
-
-    const handleCloseDetalles = () => {
-
-        resetDetalles();
+        setMostrarDetalles(mostrarDetalles);
     };
 
     return (
-
-        <div>
+       <div className = "table-responsive" >
             {show && results.map(({type, data}, index) => (
                 <div key={type}>
                     {data ? (
@@ -92,8 +84,8 @@ const FormResults = ({ results, show, handleDetallesClick }) => {
                                                     if (mostrarDetalles && resultIndex === index) {
                                                         resetDetalles();
                                                     } else {
-                                                        fetchDetails(formDataDetail, index);
-                                                        setMostrarDetalles(true);
+                                                        fetchDetails(formDataDetail, resultIndex
+                                                        );
                                                     }
                                                 }}>
                                                 {mostrarDetalles && resultIndex === index ? "Menos" : "Más"}
@@ -115,14 +107,9 @@ const FormResults = ({ results, show, handleDetallesClick }) => {
                     )}
                 </div>
             ))}
-            <Modal
-                detallesData={detallesData}
-                onClose={handleCloseDetalles}
-                mostrarDetalles={mostrarDetalles}
-            />
+           <Modal detallesData={detallesData} mostrarDetalles={mostrarDetalles} />
         </div>
     );
 };
 
 export default FormResults;
-

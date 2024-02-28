@@ -2,6 +2,7 @@
 import React from 'react';
 import './header.css';
 import LogoTandil from "../logo/logoTandil";
+import Detalles from "../details/DetallesComponent";
 
 function Header() {
     return (
@@ -15,7 +16,7 @@ function Header() {
             </header>
         </container>
 
-);
+    );
 }
 
 export default Header;
