@@ -7,11 +7,10 @@ import Modal from "../modal/modal";
 import ButtonComponent from "../buttons/button";
 const apiUrl = 'http://localhost:1521/api/';
 
-
 const MinervaForm = ({onReset}) => {
 
     const [formData, setFormData] = useState({
-        institution: '',
+        institucion: '',
         Area: '',
         subArea: '',
         espacioFormativo: '',
@@ -44,6 +43,14 @@ const MinervaForm = ({onReset}) => {
     const [mostrarDetalles, setMostrarDetalles] = React.useState(false);
     const [result, setResult] = React.useState(null);
 
+    //funcion para truncar texto en el select de instituciones
+    function truncateText(text, maxLength) {
+        if (text.length > maxLength) {
+            return text.slice(0, maxLength) + '...';
+        }
+        return text;
+    }
+
     const handleFilterSearch = async (filtro) => {
         //'filtro' es la que arma la query de resultados.
         try {
@@ -61,11 +68,9 @@ const MinervaForm = ({onReset}) => {
     };
     const performSearch = async (type, params) => {
         try {
-            // Verificar si se ha seleccionado un elemento de la lista
             if (formData.institution || formData.search || formData.Area || formData.subArea) {
                 const url = `${apiUrl}${type}?${params}`;
-              //  console.log('URL:', url);
-              //  console.log('Params:', params);
+
                 const response = await fetch(url, {
                     method: 'GET',
                     headers: {
@@ -75,10 +80,10 @@ const MinervaForm = ({onReset}) => {
 
                 if (response.ok) {
                     const data = await response.json();
-               //     console.log('Data institucion:', data);
+
                     return data;
                 } else {
-               //     console.log('Response not OK:', response);
+
                     return null;
                 }
             } else {
@@ -90,11 +95,12 @@ const MinervaForm = ({onReset}) => {
             return null;
         }
     };
+    //reseteo del formulario
     const handleReset = (e) => {
         e.preventDefault();
         setFormData({
             study: '',
-            institution: '',
+            institucion: '',
             Area: '',
             subarea: '',
             espacioFormativo: '',
@@ -107,8 +113,6 @@ const MinervaForm = ({onReset}) => {
             nivel: '',
             address: '',
             domicilio: '',
-
-
         });
         setSubAreas([]);
         setGestion([]);
@@ -125,6 +129,7 @@ const MinervaForm = ({onReset}) => {
         setModalData(result);
         setIsModalOpen(true)
     }
+
     const handleDetallesClick = (detalles) => {
         setResult(detalles);
         setMostrarDetalles(true);
@@ -179,6 +184,7 @@ const MinervaForm = ({onReset}) => {
             try {
                 const queryParams = {
                     nombre: formData.search || '',
+                    nivel: formData.nivel || '',
                     institucion: formData.institution || '',
                     Area: formData.Area || '',
                     subArea: formData.subArea || '',
@@ -188,17 +194,16 @@ const MinervaForm = ({onReset}) => {
                     gestion: formData.gestion || '',
                     duracion: formData.duracion || '',
                 };
-
                 const filteredParams = Object.entries(queryParams)
                     .filter(([key, value]) => value !== undefined && value.trim() !== '')
                     .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
                     .join('&');
 
+
                 const response = await performSearch('filter', filteredParams);
                 setFiltro(response);
-       //         console.log('a ver que trae data (response):', response);
+               console.log('a ver que trae data (response):', response);
 
-                // Aplicar el filtro y actualizar los resultados
                 handleFilterSearch(queryParams);
             } catch (error) {
                 console.error('Error al cargar los filtros:', error);
@@ -330,11 +335,11 @@ const MinervaForm = ({onReset}) => {
         };
         const fetchAddress = async () => {
             try {
-                const response = await fetch(`${apiUrl}addres?institucion=${formData.institution}`);
+                const response = await fetch(`${apiUrl}addres?institucion=${formData.institucion}`);
                 const data = await response.json();
                 setFormData((prevFormData) => ({
                     ...prevFormData,
-                    address: data,
+                    domicilio: data,
                 }));
             } catch (error) {
                 console.error('Error al obtener el domicilio:', error);
@@ -378,30 +383,32 @@ const MinervaForm = ({onReset}) => {
                                         />
                                     </label>
                                 </div>
-                                <div className="col-md-18 mb-3">
+                                <div className="col-md-6 mb-3">
                                     <label htmlFor="institution" aria-label="Seleccionar instituciones">
                                         Institucion?
                                         <select
                                             className="form-control"
                                             name="institution"
-                                            value={formData.institution}
+                                            value={formData.institucion}
                                             onChange={(e) => handleChange(e)}
                                             onReset={handleReset}
                                         >
                                             <option key="" value="">
-                                                En que institucion te gustaria aprender
+                                                En qué institución te gustaría aprender
                                             </option>
                                             {institutions?.map((institution) => (
                                                 <option
-                                                    key={institution.institution}
-                                                    value={institution.institution}
+                                                    key={institution.institucion}
+                                                    value={institution.institucion}
                                                 >
-                                                    {institution.DISPLAY_VALUE}
+                                                    {truncateText(institution.DISPLAY_VALUE, 50)} {/* Límite de 50 caracteres */}
                                                 </option>
                                             ))}
                                         </select>
                                     </label>
                                 </div>
+
+
                             </div>
                             <div className="row">
                                 <label htmlFor="Area">
@@ -417,7 +424,7 @@ const MinervaForm = ({onReset}) => {
                                         </option>
                                         {areas?.map((data) => (
                                             <option key={data.Area} value={data.AREA}>
-                                                {data.AREA}
+                                            {data.AREA}
                                             </option>
                                         ))}
                                     </select>
@@ -570,9 +577,13 @@ const MinervaForm = ({onReset}) => {
                     }}
                 />
             </div>
-            <div>
-                <Modal detallesData={result} mostrarDetalles={mostrarDetalles}/>
-            </div>
+            <div className="row">
+                <DetallesComponent
+                    result={result}
+                    mostrarDetalles={mostrarDetalles}
+                    setMostrarDetalles={setMostrarDetalles}
+                />
+                </div>
 
         </div>
     );

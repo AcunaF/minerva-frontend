@@ -1,0 +1,8 @@
+.logo-tandil {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+    margin-left: 35px;
+    height: 100%;
+}

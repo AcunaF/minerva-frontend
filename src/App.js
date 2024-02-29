@@ -25,21 +25,26 @@ function App() {
         alert('Formulario enviado')
     };
     const handleReset = (e) => {
-       alert('Formulario reseteado')
+        alert('Formulario reseteado')
     };
 
     return (
-        <div>
+        <>
             <main>
-                <div className="container">
+                <div className="">
                     <Header/>
                     <Banner/>
-                    <SearchForm handleSearchDataChange={handleSearchDataChange} handleSubmit={handleSubmit}
-                                handleReset={handleReset}/>
+                    <div className="container">
+                        <SearchForm handleSearchDataChange={handleSearchDataChange}
+                                    handleSubmit={handleSubmit}
+                                    handleReset={handleReset}/>
+                    </div>
+                    <>
+                        <Footer/>
+                    </>
                 </div>
             </main>
-            <Footer/>
-        </div>
+        </>
     );
 }
 

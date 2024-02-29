@@ -1,27 +1,28 @@
-.emcabezado {
+.encabezado {
     position: relative;
+
 }
 
-.emcabezado-oscuro {
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+.encabezado-oscuro {
+    position: relative;
+    width: 100%;
+    height: 180px;
     background-size: cover;
     background-position: center center;
 }
 
-.emcabezado-oscuro::after {
-    content: "";
+.capa-oscura {
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
+    background: rgba(0, 0, 0, 0.3); /* Ajusta el nivel de opacidad según tus preferencias */
 }
 
-.titulo h2, .titulo h4 {
-    color: white !important;
-
+.encabezado-oscuro h2, .encabezado-oscuro h4 {
+    padding: 15px;
+    position: relative;
+    z-index: 1; /* Asegura que el texto esté encima de la capa oscura */
+    color: white;
 }
-

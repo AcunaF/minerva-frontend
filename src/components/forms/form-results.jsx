@@ -1,10 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import DetallesComponent from '../details/DetallesComponent';
 import Modal from "../modal/modal";
 
 const apiUrl = 'http://localhost:1521/api/';
 
+//Los datos de detalle que vienen del backend se almacenan en el estado detallesData que se define en el componente FormResults con useState.
+//Cuando hago la petición al backend con la función fetchDetails, se guarda la respuesta en detallesData con setDetallesData(data).
+//El estado mostrarDetalles se utiliza para controlar si el modal se muestra o no.
+// Cuando hago clic en el botón de detalles, se llama a fetchDetails, que a su vez llama a setMostrarDetalles(!mostrarDetalles) para mostrar el modal.
+//<Modal detallesData={detallesData} mostrarDetalles={mostrarDetalles} /> Para mostrar estos datos le paso como prop al componente Modal:
 const FormResults = ({ results, show,handleDetallesClick }) => {
+
+    const [detallesData, setDetallesData] = useState(null);
+    const [mostrarDetalles, setMostrarDetalles] = useState(true);
+    const [resultIndex, setResultIndex] = useState(null);  // Nuevo estado para almacenar resultIndex
+
     const columnasAMostrar = [
         'NOMBRE',
         'INSTITUCION',
@@ -13,9 +23,13 @@ const FormResults = ({ results, show,handleDetallesClick }) => {
         'NIVEL',
         'DOMICILIO', // Ajuste: eliminé la duplicación de 'INSTITUCION'
     ];
-    const [detallesData, setDetallesData] = useState(null);
-    const [mostrarDetalles, setMostrarDetalles] = useState(false);
-    const [resultIndex, setResultIndex] = useState(null);  // Nuevo estado para almacenar resultIndex
+
+    const openDetalles   = () => {
+        alert('Abrió la función openDetalles en:\n' +
+            'Mostrar Detalles: ' + mostrarDetalles + '\n' +
+            'Detalles:\n' + JSON.stringify(detallesData, null, 2));
+        setMostrarDetalles(true);
+    };
 
     const resetDetalles = () => {
         setDetallesData(null);
@@ -38,20 +52,25 @@ const FormResults = ({ results, show,handleDetallesClick }) => {
                 throw new Error(`Error al obtener detalles: ${response.status}`);
             }
 
+ //cuando hago clic en el botón de detalles, se llama a la función fetchDetails
+ // Esta función realiza una petición al backend para obtener los detalles del elemento seleccionado.
+ // Una vez que los detalles se han obtenido, se almacenan en el estado detallesData y se llama a la función setMostrarDetalles con el argumento true para mostrar el modal.
             const data = await response.json();
             setDetallesData(data);
             setResultIndex(index);
             handleDetallesClick(data);
-            console.log('Detalles:', data);
+            console.log('fetchDetails:', data);
             setResultIndex(index);  // Almacenar resultIndex cuando se abren los detalles
             console.log('resultIndex:', index);
-            setMostrarDetalles(!mostrarDetalles);
         } catch (error) {
             console.error('Error fetching details:', error.message);
 
         }
-        setMostrarDetalles(mostrarDetalles);
+       // setMostrarDetalles(mostrarDetalles);
     };
+    useEffect(() => {
+        console.log('mostrarDetalles updated en :', mostrarDetalles,'detalles',detallesData);
+    }, [mostrarDetalles]);
 
     return (
        <div className = "table-responsive" >
@@ -77,25 +96,22 @@ const FormResults = ({ results, show,handleDetallesClick }) => {
                                             </td>
                                         ))}
                                         <td>
+                                            {/*el boton se cierra desde el componente modal... en la misma aventana aparece el boton de cerrar*/}
                                             <button
                                                 type="button"
-                                                className={`btn btn-primary btn-sm ${mostrarDetalles && resultIndex === index ? 'active' : ''}`}
+                                                className="btn btn-primary btn-sm"
                                                 onClick={() => {
-                                                    if (mostrarDetalles && resultIndex === index) {
-                                                        resetDetalles();
-                                                    } else {
-                                                        fetchDetails(formDataDetail, resultIndex
-                                                        );
-                                                    }
+                                                    fetchDetails(formDataDetail, index);
+                                                    openDetalles();
                                                 }}>
-                                                {mostrarDetalles && resultIndex === index ? "Menos" : "Más"}
+                                                Más
                                             </button>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={columnasAMostrar.length + 1}>
+                                <td colSpan={columnasAMostrar.length + 1}>
                                         No hay resultados para mostrar.
                                     </td>
                                 </tr>
@@ -103,12 +119,12 @@ const FormResults = ({ results, show,handleDetallesClick }) => {
                             </tbody>
                         </table>
                     ) : (
-                        <p> </p>
+                        <p></p>
                     )}
                 </div>
             ))}
-           <Modal detallesData={detallesData} mostrarDetalles={mostrarDetalles} />
-        </div>
+           {mostrarDetalles && <Modal detallesData={detallesData} mostrarDetalles={mostrarDetalles} setMostrarDetalles={setMostrarDetalles} />}
+       </div>
     );
 };
 

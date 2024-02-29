@@ -1,8 +1,9 @@
 import React from 'react';
+import './logoTandil.css';
 const LogoTandil = () => {
     return (
-        <div className="emcabezado">
-            <img src={require('../../asset/logo_tandil2.png')} alt="Logo Tandil" className="img-fluid" />
+        <div className="logo-tandil">
+            <img src={require('../../asset/logo_tandil2.png')} alt="Logo Tandil" className="img-fluid logo-tandil" />
         </div>
     );
 };
