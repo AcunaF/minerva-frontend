@@ -1,59 +1,58 @@
-import React, {useEffect} from 'react';
+import React, { useEffect, useState } from 'react';
+import './modal.css';
 
 const Modal = ({ detallesData, mostrarDetalles, setMostrarDetalles }) => {
+    const [modalClass, setModalClass] = useState('modal');
+
+    const handleOpen = () => {
+        console.log('handleOpen called', detallesData);
+        setMostrarDetalles(true);
+    };
 
     const handleClose = () => {
-        console.log('handleClose called');
+        console.log('handleClose called', detallesData);
         setMostrarDetalles(false);
+    };
+    const formatObject = (obj) => {
+        return Object.entries(obj)
+            .map(([subKey, subValue]) => `${subKey}: ${subValue}`)
+            .join(', ');
     };
 
     useEffect(() => {
-        const modalElement = document.querySelector('.modal');
-        if (modalElement) {
-            if (mostrarDetalles) {
-                modalElement.classList.add('show');
-            } else {
-                modalElement.classList.remove('show');
-            }
-        }
+        setModalClass(mostrarDetalles ? 'modal show' : 'modal');
     }, [mostrarDetalles]);
 
-    if (!mostrarDetalles) {
-        return null;
-    }
     return (
-        <div className={`modal ${mostrarDetalles ? 'show' : ''}`}>
+        <div className={modalClass}>
             <div className="modal-dialog">
                 <div className="modal-content">
                     <div className="modal-header">
                         <h5 className="modal-title">Detalles</h5>
-                        {/*<button type="button" className="close" data-dismiss="modal" aria-label="Close" onClick={handleClose}>*/}
-                        <button type="button" className="close" onClick={handleClose}>
-                            <span>&times;</span>
-                        </button>
                     </div>
                     <div className="modal-body">
-                        {detallesData &&
-                            <table>
-                                <thead>
-                                <tr>
-                                    {Object.keys(detallesData).map((key, index) => (
-                                        <th key={index}>{key}</th>
-                                    ))}
-                                </tr>
-                                </thead>
+                        {detallesData && detallesData.length > 0 && (
+                            <table className="table table-striped">
                                 <tbody>
-                                <tr>
-                                    {Object.values(detallesData).map((value, index) => (
-                                        <td key={index}>{value.toString()}</td>
-                                    ))}
-                                </tr>
+
+                                {Object.entries(detallesData[0]).map(([key, value], index) => {
+                                        const valueToRender = typeof value === 'object' ? JSON.stringify(value) : value;
+                                        return (
+                                            <tr key={index}>
+                                                <td>{key}</td>
+                                                <td>{valueToRender}</td>
+                                            </tr>
+                                        );
+
+                                })}
                                 </tbody>
                             </table>
-                        }
+                        )}
                     </div>
                     <div className="modal-footer">
-                        <button type="button" className="btn btn-secondary" onClick={handleClose}>Cerrar</button>
+                        <button type="button" className="btn btn-secondary" onClick={handleClose}>
+                            Cerrar
+                        </button>
                     </div>
                 </div>
             </div>
@@ -62,3 +61,14 @@ const Modal = ({ detallesData, mostrarDetalles, setMostrarDetalles }) => {
 };
 
 export default Modal;
+
+/*{Object.entries(detallesData).map(([key, value], index) => {
+                                    const valueToRender =
+                                        formatObject(value) ;
+
+                                    return (
+                                        <tr key={index}>
+                                            <td>{valueToRender}</td>
+                                        </tr>
+                                    );
+                                })}*/

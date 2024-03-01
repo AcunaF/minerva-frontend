@@ -2,11 +2,11 @@ import React from 'react';
 
 const ButtonComponent = ({ handleSubmit, handleReset }) => {
     return (
-        <div className="container-fluid">
+        <div className="">
             <button
                 onClick={handleSubmit}
                 type="submit"
-                className="btn btn-outline-secondary w-20 m-3"
+                className="btn btn-outline-secondary w-25 "
                 aria-label="Buscar"
             >
                 Buscar
@@ -14,7 +14,7 @@ const ButtonComponent = ({ handleSubmit, handleReset }) => {
             <button
                 onClick={handleReset}
                 type="submit"
-                className="btn btn-outline-secondary w-20 m-3"
+                className="btn btn-outline-secondary w-25 m-3"
                 aria-label="Reset"
             >
                 Reset

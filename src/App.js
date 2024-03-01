@@ -29,9 +29,9 @@ function App() {
     };
 
     return (
-        <>
+
             <main>
-                <div className="">
+                <div className="container-fluid">
                     <Header/>
                     <Banner/>
                     <div className="container">
@@ -39,12 +39,12 @@ function App() {
                                     handleSubmit={handleSubmit}
                                     handleReset={handleReset}/>
                     </div>
-                    <>
+                    <div className="footer">
                         <Footer/>
-                    </>
+                    </div>
                 </div>
             </main>
-        </>
+
     );
 }
 

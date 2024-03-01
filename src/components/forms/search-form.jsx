@@ -19,7 +19,6 @@ const MinervaForm = ({onReset}) => {
         duracion: '',
         franjaHoraria: '',
         search: '',
-        name: '',
         nivel: '',
         address: '',
         domicilio: '',
@@ -100,7 +99,7 @@ const MinervaForm = ({onReset}) => {
         e.preventDefault();
         setFormData({
             study: '',
-            institucion: '',
+            institution: '',
             Area: '',
             subarea: '',
             espacioFormativo: '',
@@ -109,7 +108,6 @@ const MinervaForm = ({onReset}) => {
             duracion: '',
             franjaHoraria: '',
             search: '',
-            nombre: '',
             nivel: '',
             address: '',
             domicilio: '',
@@ -124,17 +122,13 @@ const MinervaForm = ({onReset}) => {
         setNombre(null);
 
     };
-
-    const fetchDetails = (result) => {
-        setModalData(result);
-        setIsModalOpen(true)
-    }
-
     const handleDetallesClick = (detalles) => {
         setResult(detalles);
         setMostrarDetalles(true);
     };
 
+//Esta función actualizará el estado de los datos del formulario con el nuevo valor del campo del formulario que desencadenó el evento de cambio.
+//El nombre del campo del formulario debe coincidir con la clave en el estado de los datos del formulario.
     const handleChange = (e) => {
 
         const {name, value} = e.target;
@@ -143,6 +137,7 @@ const MinervaForm = ({onReset}) => {
             [name]: value,
         }));
     };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -185,6 +180,7 @@ const MinervaForm = ({onReset}) => {
                 const queryParams = {
                     nombre: formData.search || '',
                     nivel: formData.nivel || '',
+                    address: formData.calle || null,
                     institucion: formData.institution || '',
                     Area: formData.Area || '',
                     subArea: formData.subArea || '',
@@ -195,7 +191,7 @@ const MinervaForm = ({onReset}) => {
                     duracion: formData.duracion || '',
                 };
                 const filteredParams = Object.entries(queryParams)
-                    .filter(([key, value]) => value !== undefined && value.trim() !== '')
+                    .filter(([key, value]) => value !== undefined && value !== '')
                     .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
                     .join('&');
 
@@ -339,7 +335,7 @@ const MinervaForm = ({onReset}) => {
                 const data = await response.json();
                 setFormData((prevFormData) => ({
                     ...prevFormData,
-                    domicilio: data,
+                    address: data,
                 }));
             } catch (error) {
                 console.error('Error al obtener el domicilio:', error);
@@ -360,16 +356,16 @@ const MinervaForm = ({onReset}) => {
         fetchAddress();
         fecthSearchFilter();
 
-    }, [apiUrl, formData.study, formData.institution, formData.Area, formData.subArea, formData.search,]);
+    }, [apiUrl, formData.study,formData.institution, formData.Area, formData.subArea, formData.search,formData.address,formData.filter,]);
 
     return (
-        <div className="Container p-12">
+        <div className="container-fluid p-12">
             <div className="row">
                 <div className="container-fluid col-md-8 ">
                     <form onSubmit={handleSubmit}>
                         <div className="row">
                             <div className="row-cols-auto mt-2">
-                                <div className="row">
+                                <div className="row mb-3">
                                     <label htmlFor="search" aria-label="Seleccionar searcherd">
                                         Qué queres estudiar?
                                         <input
@@ -383,23 +379,21 @@ const MinervaForm = ({onReset}) => {
                                         />
                                     </label>
                                 </div>
-                                <div className="col-md-6 mb-3">
-                                    <label htmlFor="institution" aria-label="Seleccionar instituciones">
-                                        Institucion?
+                                <div className="row mb-3">
+                                    <label htmlFor="institution">
+                                        Que Institucion te gusta??
                                         <select
                                             className="form-control"
                                             name="institution"
-                                            value={formData.institucion}
-                                            onChange={(e) => handleChange(e)}
+                                            value={formData.institution}
+                                            onChange={handleChange}
                                             onReset={handleReset}
                                         >
-                                            <option key="" value="">
-                                                En qué institución te gustaría aprender
-                                            </option>
+                                            <option key="" value="">  En qué institución te gustaría aprender  </option>
                                             {institutions?.map((institution) => (
                                                 <option
-                                                    key={institution.institucion}
-                                                    value={institution.institucion}
+                                                    key={institution.institution}
+                                                    value={institution.institution}
                                                 >
                                                     {truncateText(institution.DISPLAY_VALUE, 50)} {/* Límite de 50 caracteres */}
                                                 </option>
@@ -407,10 +401,8 @@ const MinervaForm = ({onReset}) => {
                                         </select>
                                     </label>
                                 </div>
-
-
                             </div>
-                            <div className="row">
+                            <div className="row mb-3">
                                 <label htmlFor="Area">
                                     Area
                                     <select
@@ -418,10 +410,9 @@ const MinervaForm = ({onReset}) => {
                                         name="Area"
                                         value={formData.Area}
                                         onChange={handleChange}
+                                        onReset={handleReset}
                                     >
-                                        <option key=" " value=" ">
-                                            En que area te gustaria aprender?
-                                        </option>
+                                        <option key=" " value=" "> En que area te gustaria aprender? </option>
                                         {areas?.map((data) => (
                                             <option key={data.Area} value={data.AREA}>
                                             {data.AREA}
@@ -452,7 +443,7 @@ const MinervaForm = ({onReset}) => {
                             </div>
                             <div className="col-md-4 mb-3">
                                 <label htmlFor="espacioFormativo">
-                                    Espacio Formativo:
+                                    Formacion:
                                     <select
                                         className="form-control"
                                         name="espacioFormativo"

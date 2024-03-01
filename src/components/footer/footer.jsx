@@ -6,7 +6,7 @@ function Footer() {
 
         <footer>
             <div className="footer">
-                <p>Derechos de autor © 2024 Mi Aplicación</p>
+
             </div>
         </footer>
 
